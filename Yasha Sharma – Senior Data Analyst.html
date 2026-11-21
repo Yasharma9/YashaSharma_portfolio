@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Yasha Sharma – Senior Data Analyst</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2f6f7; --surface:#ffffff; --ink:#16232a; --muted:#55666e; --line:#d3dde1;
+  --accent:#00789a; --accent-ink:#ffffff; --soft:#dcecf1; --warn:#8a6a1f; --warn-bg:#f3ead1;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1a1f; --surface:#16252c; --ink:#e6eef1; --muted:#93a7ae; --line:#26383f;
+    --accent:#3cc3e0; --accent-ink:#07202a; --soft:#1c3640; --warn:#e2c46e; --warn-bg:#2e2916;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1a1f; --surface:#16252c; --ink:#e6eef1; --muted:#93a7ae; --line:#26383f;
+  --accent:#3cc3e0; --accent-ink:#07202a; --soft:#1c3640; --warn:#e2c46e; --warn-bg:#2e2916;
+}
+html{scroll-padding-top:70px;scroll-behavior:smooth}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 "Instrument Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.note{background:var(--warn-bg);color:var(--warn);font-size:.85rem;padding:8px 20px;text-align:center}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px;flex-wrap:wrap}
+.logo{font:700 1.1rem "Bricolage Grotesque",sans-serif;text-decoration:none}
+nav{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+nav a{text-decoration:none;color:var(--muted);font-size:.93rem}
+nav a:hover{color:var(--ink)}
+.theme{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:3px 10px;font-size:.85rem}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:32px;align-items:center;padding:56px 0}
+.hero h1{font-size:clamp(2.1rem,6vw,3.4rem);font-weight:700;letter-spacing:-.02em}
+.hero p{color:var(--muted);max-width:52ch;margin:16px 0 22px}
+.btns{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:500;border:1px solid var(--line);background:var(--surface)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.profile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.avatar{width:64px;height:64px;border-radius:50%;background:var(--soft);border:1px solid var(--line);display:grid;place-items:center;font:700 1.3rem "Bricolage Grotesque",sans-serif;color:var(--accent)}
+.profile h3{font-size:1.2rem}
+.muted{color:var(--muted);font-size:.93rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.stat b{display:block;font:700 1.5rem "Bricolage Grotesque",sans-serif;color:var(--accent)}
+.stat span{font-size:.78rem;color:var(--muted);line-height:1.3;display:block}
+section{padding:44px 0}
+h2.t{font-size:1.8rem;margin-bottom:8px}
+h2.t::after{content:"";display:block;width:64px;height:3px;border-radius:2px;background:var(--accent);margin-top:10px}
+.sub{color:var(--muted);margin:0 0 22px;max-width:62ch}
+.about{display:grid;grid-template-columns:240px 1fr;gap:40px;align-items:start;margin-top:22px}
+.photo{width:210px;height:210px;border-radius:50%;border:4px solid var(--accent);background:var(--soft);display:grid;place-items:center;font:700 3.2rem "Bricolage Grotesque",sans-serif;color:var(--accent);margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.about p{margin:0 0 14px;color:var(--muted)}
+.about p b{color:var(--ink);font-weight:500}
+.hl{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:22px}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.hcard h3{font-size:1.05rem;color:var(--accent);padding-bottom:10px;border-bottom:1px solid var(--accent);margin-bottom:14px}
+.hcard ul{list-style:none;margin:0;padding:0;display:grid;gap:9px;font-size:.93rem}
+.hcard li{display:flex;gap:10px;align-items:center}
+.hcard li::before{content:"";flex:none;width:0;height:0;border-left:7px solid var(--accent);border-top:4px solid transparent;border-bottom:4px solid transparent}
+.stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:22px}
+.sg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.sg header{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.ico{width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
+.ico svg{width:20px;height:20px}
+.sg h3{font-size:1.05rem}
+.sk{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:8px}
+.sk span{display:block;font-size:.9rem;font-weight:500;margin-bottom:6px}
+.lv{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.lv i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--soft),var(--accent))}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.filters button{background:none;border:1px solid var(--line);color:var(--ink);padding:6px 14px;border-radius:999px;font-size:.9rem}
+.filters button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.projects{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+.proj{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.proj[hidden]{display:none}
+.shot{height:96px;background:repeating-linear-gradient(135deg,var(--line) 0 8px,transparent 8px 16px);display:grid;place-items:center;color:var(--muted);font-size:.8rem}
+.pbody{padding:16px 18px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.cat{font-size:.8rem;color:var(--accent)}
+.proj h3{font-size:1.08rem}
+.proj p{margin:0;color:var(--muted);font-size:.93rem}
+.proj dl{margin:2px 0 0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:.88rem}
+.proj dt{color:var(--muted)}
+.proj dd{margin:0}
+.tag{display:inline-block;font-size:.76rem;border-radius:999px;padding:1px 9px;background:var(--warn-bg);color:var(--warn);width:max-content}
+.proj.wide{grid-column:1/-1}
+.proj.wide .shot{height:130px;background:var(--bg)}
+.plinks{display:flex;gap:18px;flex-wrap:wrap;font-size:.92rem}
+.plinks a{color:var(--accent);text-decoration:none;font-weight:500}
+.plinks a:hover{text-decoration:underline}
+.proj details{border-top:1px solid var(--line);padding-top:8px;font-size:.88rem}
+.proj summary{cursor:pointer;color:var(--accent);font-weight:500}
+.proj details ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}
+.proj details li{margin-bottom:4px}
+.timeline{display:grid;gap:14px}
+.job{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.job header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.job h3{font-size:1.08rem}
+.job ul{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:.93rem}
+.job li{margin-bottom:4px}
+.contact{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.contact p{margin:0;color:var(--muted)}
+.rows{display:grid;gap:10px;font-size:.95rem}
+.rows span{color:var(--muted);display:block;font-size:.82rem}
+footer{padding:24px 0 36px;color:var(--muted);font-size:.85rem}
+@media (max-width:760px){
+  .hero,.about,.contact{grid-template-columns:1fr}
+  .hero{padding:32px 0}
+  .projects{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body.editing{padding-bottom:120px}
+body.editing .proj,body.editing .job,body.editing .sk{position:relative}
+body.editing [contenteditable]:hover{outline:1px dashed var(--accent);outline-offset:2px}
+body.editing [contenteditable]:focus{outline:2px solid var(--accent);outline-offset:2px}
+body.editing .photo,body.editing .avatar,body.editing .shot{cursor:pointer}
+body.editing .lv{cursor:ew-resize}
+.eb{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));background:var(--surface);border-top:2px solid var(--accent);box-shadow:0 -6px 20px rgba(0,0,0,.2);font-size:.85rem}
+.eb b{margin-right:6px}.eb .eh{color:var(--muted);flex:1 1 280px}
+.eb button,.em button,.lp button,.ec button,.ec select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-size:.82rem;cursor:pointer}
+.eb button.primary,.em button.primary,.lp button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.ec{position:absolute;top:6px;right:6px;display:flex;gap:4px;z-index:5;flex-wrap:wrap;justify-content:flex-end}
+.ec button,.ec select{padding:2px 8px;font-size:.74rem}
+.sk .ec{opacity:0}.sk:hover .ec,.sk:focus-within .ec{opacity:1}
+.em{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:grid;place-items:center;padding:16px}
+.em>div{background:var(--surface);border-radius:14px;padding:16px;max-width:760px;width:100%}
+.em p{color:var(--muted);margin:6px 0 10px}
+.em textarea{width:100%;height:46vh;font:12px/1.4 monospace;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
+.em .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.lp{position:fixed;left:14px;right:14px;bottom:70px;z-index:55;background:var(--surface);border:1px solid var(--accent);border-radius:10px;padding:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.lp input{flex:1 1 240px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+</style>
+</head>
+<body>
+<div class="note">Draft built from your resume. Check every number and the wording before publishing. Skill bar levels are samples, so set your own.</div>
+<div class="bar"><div class="wrap">
+  <a class="logo" href="#top">Yasha Sharma</a>
+  <nav aria-label="Main">
+    <a href="#about">About</a>
+    <a href="#skills">Skills</a>
+    <a href="#projects">Projects</a>
+    <a href="#experience">Experience</a>
+    <a href="#contact">Contact</a>
+    <button class="theme" id="themeBtn" type="button" aria-label="Switch light or dark theme">Theme</button>
+  </nav>
+</div></div>
+
+<main class="wrap" id="top">
+  <div class="hero">
+    <div>
+      <h1>I turn farm sensor and crop data into decisions teams can act on.</h1>
+      <p>Senior Data Analyst with about 4 years in agricultural data. I build real-time dashboards, monitoring systems and analytical tools, and I lead a team of 7 data professionals.</p>
+      <div class="btns">
+        <a class="btn primary" href="#projects">View my projects</a>
+        <a class="btn" href="#contact">Download resume</a>
+      </div>
+    </div>
+    <aside class="profile" aria-label="Profile summary">
+      <div class="avatar">YS</div>
+      <div><h3>Yasha Sharma</h3><div class="muted">Senior Data Analyst, Eeki Automation</div></div>
+      <div class="muted">Grafana, InfluxDB, SQL, Python</div>
+      <div class="stats">
+        <div class="stat"><b>100+</b><span>Polyhouses monitored in real time</span></div>
+        <div class="stat"><b>75%</b><span>Better data accuracy through SOPs</span></div>
+        <div class="stat"><b>88%</b><span>Digitization efficiency gain</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <section id="about">
+    <h2 class="t">About me</h2>
+    <div class="about">
+      <div class="photo" role="img" aria-label="Profile photo placeholder">YS</div>
+      <div>
+        <p>I’m a <b>Senior Data Analyst</b> based in <b>Kota, Rajasthan</b>, working with agricultural data at <b>Eeki Automation</b>. My days are spent with <b>IoT sensor, climate and crop data</b>, turning it into dashboards and tools that farm teams rely on.</p>
+        <p>My path began in <b>electrical and automation engineering</b>, working with PLC and SCADA systems, and continued through <b>teaching</b> as an assistant professor. Those years taught me to explain complex ideas simply, and to respect how machines and people work together.</p>
+        <p>Today I lead a team of <b>7 data professionals</b>, write <b>standard procedures</b> for collecting reliable data, and keep building on the side, from a <b>weather forecasting dashboard</b> to a <b>smart soil sensor</b> with automatic irrigation.</p>
+        <p>To me, data work is only finished when someone uses it to make a better decision.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="highlights">
+    <h2 class="t">Analytical highlights</h2>
+    <div class="hl">
+      <div class="hcard"><h3>Languages and queries</h3><ul><li>Python for analysis and modelling</li><li>SQL and Flux for time-series data</li><li>R and Excel for quick studies</li></ul></div>
+      <div class="hcard"><h3>Modelling and analysis</h3><ul><li>Yield prediction with regression and tree models</li><li>Cluster analysis for sensor placement</li><li>Climate and plant health analysis</li></ul></div>
+      <div class="hcard"><h3>Operations and monitoring</h3><ul><li>Real-time dashboards and KPI tracking</li><li>Automated data quality checks</li><li>SOP design and variance analysis</li></ul></div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2 class="t">Tech stack and skills</h2>
+    <p class="sub">What I use day to day to build data solutions.</p>
+    <div class="stack">
+      <div class="sg"><header><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></svg></span><h3>Programming and data</h3></header>
+        <div class="sk"><span>Python</span><div class="lv"><i style="width:80%"></i></div></div>
+        <div class="sk"><span>SQL</span><div class="lv"><i style="width:85%"></i></div></div>
+        <div class="sk"><span>Flux and Influx query</span><div class="lv"><i style="width:85%"></i></div></div>
+        <div class="sk"><span>R</span><div class="lv"><i style="width:55%"></i></div></div>
+        <div class="sk"><span>Data pipelines</span><div class="lv"><i style="width:75%"></i></div></div>
+        <div class="sk"><span>Predictive modelling</span><div class="lv"><i style="width:70%"></i></div></div>
+      </div>
+      <div class="sg"><header><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></span><h3>Tools and platforms</h3></header>
+        <div class="sk"><span>Grafana</span><div class="lv"><i style="width:90%"></i></div></div>
+        <div class="sk"><span>InfluxDB</span><div class="lv"><i style="width:85%"></i></div></div>
+        <div class="sk"><span>Excel</span><div class="lv"><i style="width:90%"></i></div></div>
+        <div class="sk"><span>Power BI</span><div class="lv"><i style="width:70%"></i></div></div>
+        <div class="sk"><span>Tableau</span><div class="lv"><i style="width:65%"></i></div></div>
+        <div class="sk"><span>Google Workspace</span><div class="lv"><i style="width:85%"></i></div></div>
+      </div>
+      <div class="sg"><header><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span><h3>Analytics and leadership</h3></header>
+        <div class="sk"><span>Sensor and climate analysis</span><div class="lv"><i style="width:90%"></i></div></div>
+        <div class="sk"><span>Cluster analysis</span><div class="lv"><i style="width:70%"></i></div></div>
+        <div class="sk"><span>SOP development</span><div class="lv"><i style="width:85%"></i></div></div>
+        <div class="sk"><span>Team leadership</span><div class="lv"><i style="width:85%"></i></div></div>
+        <div class="sk"><span>Stakeholder communication</span><div class="lv"><i style="width:80%"></i></div></div>
+        <div class="sk"><span>Training and mentoring</span><div class="lv"><i style="width:80%"></i></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects">
+    <h2 class="t">Projects</h2>
+    <p class="sub">Grouped by type. Each shows the tools used and what it achieved.</p>
+    <div class="filters" role="group" aria-label="Filter projects">
+      <button type="button" data-f="all" aria-pressed="true">All</button>
+      <button type="button" data-f="Dashboards" aria-pressed="false">Dashboards</button>
+      <button type="button" data-f="Tools" aria-pressed="false">Tools</button>
+      <button type="button" data-f="Models" aria-pressed="false">Models and analysis</button>
+      <button type="button" data-f="Apps" aria-pressed="false">Apps and hardware</button>
+    </div>
+    <div class="projects">
+      <article class="proj wide" data-c="Dashboards"><div class="shot"><svg viewBox="0 0 320 120" aria-hidden="true" style="width:100%;height:100%"><rect x="10" y="10" width="44" height="14" rx="7" fill="var(--accent)"/><rect x="60" y="10" width="44" height="14" rx="7" fill="none" stroke="var(--line)"/><rect x="110" y="10" width="44" height="14" rx="7" fill="none" stroke="var(--line)"/><rect x="160" y="10" width="44" height="14" rx="7" fill="none" stroke="var(--line)"/><path d="M12 98 C50 96 70 76 110 64 S170 42 210 46 S260 56 300 40" fill="none" stroke="#3cc3e0" stroke-width="3" stroke-linecap="round"/><path d="M12 100 C50 98 70 80 110 70 S170 48 210 52 S260 54 300 46" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/><circle cx="210" cy="46" r="6" fill="none" stroke="#d64545" stroke-width="2"/><g><rect x="240" y="76" width="14" height="10" rx="2" fill="#3b528b"/><rect x="256" y="76" width="14" height="10" rx="2" fill="#21918c"/><rect x="272" y="76" width="14" height="10" rx="2" fill="#5ec962"/><rect x="288" y="76" width="14" height="10" rx="2" fill="#fde725"/><rect x="240" y="88" width="14" height="10" rx="2" fill="#440154"/><rect x="256" y="88" width="14" height="10" rx="2" fill="#3b528b"/><rect x="272" y="88" width="14" height="10" rx="2" fill="#21918c"/><rect x="288" y="88" width="14" height="10" rx="2" fill="#5ec962"/></g></svg></div><div class="pbody">
+        <span class="cat">Dashboards</span><h3>Crop performance KPI dashboard</h3><span class="tag">Built with sample data</span>
+        <p>One review screen for a 20-polyhouse farm. Eight sections (growth, production, quality, nutrition, crop protection, climate, manpower, and growth, light and yield) open into clickable metric blocks with week-on-week change, expected-trend lines, anomaly flags, climate target bands and a same-crop heatmap.</p>
+        <dl><dt>At work</dt><dd>Real-time Grafana KPI dashboards across 100+ polyhouses and 160+ acres</dd><dt>In this demo</dt><dd>Sample farm F001 with 20 polyhouses and 4 crops, built as an interactive web page</dd><dt>Tools</dt><dd>HTML, CSS, JavaScript and SVG charts. Sample data made with a seeded random generator in JavaScript.<br><span style="color:var(--muted)">Similar dashboards can be built using Tableau, Power BI and Python apps.</span></dd></dl>
+        <div class="plinks"><a href="https://claude.ai/artifact/UNPLB19S2D1d3vDawRX4G6">Open live dashboard</a><a href="https://claude.ai/artifact/SMRmtceWF8einfrHeGKdvQ">View sample dataset</a></div></div></article>
+      <article class="proj wide" data-c="Dashboards"><div class="shot"><svg viewBox="0 0 320 120" aria-hidden="true" style="width:100%;height:100%"><rect x="214" y="14" width="94" height="62" fill="var(--accent)" opacity=".08"/><path d="M12 62 C40 50 70 66 100 52 S160 40 214 46" fill="none" stroke="#ff9830" stroke-width="3" stroke-linecap="round"/><path d="M214 46 C240 44 270 48 304 50" fill="none" stroke="#ff9830" stroke-width="2.5" stroke-dasharray="5 4"/><path d="M214 46 L304 36 L304 66 Z" fill="#ff9830" opacity=".2"/><path d="M12 96 C40 90 70 100 100 90 S160 84 214 88" fill="none" stroke="#5794f2" stroke-width="3" stroke-linecap="round"/><path d="M214 88 C240 87 270 89 304 90" fill="none" stroke="#5794f2" stroke-width="2.5" stroke-dasharray="5 4"/><line x1="8" x2="312" y1="102" y2="102" stroke="#f2495c" stroke-dasharray="4 4" opacity=".7"/><g><rect x="12" y="8" width="10" height="6" rx="1" fill="#73bf69"/><rect x="24" y="8" width="10" height="6" rx="1" fill="#73bf69"/><rect x="36" y="8" width="10" height="6" rx="1" fill="#a8c8f5"/><rect x="48" y="8" width="10" height="6" rx="1" fill="#3274d9"/><rect x="60" y="8" width="10" height="6" rx="1" fill="#73bf69"/><rect x="72" y="8" width="10" height="6" rx="1" fill="#a8c8f5"/></g></svg></div><div class="pbody">
+        <span class="cat">Dashboards</span><h3>Climate analysis and forecasting</h3><span class="tag">Built with sample data</span>
+        <p>A Grafana-style climate dashboard for one polyhouse. It tracks day and night temperature, humidity, VPD and solar radiation against target ranges, forecasts the next 7 days, and turns the forecast into a growth index and a list of watch-outs such as cold nights, heat stress and disease risk.</p>
+        <dl><dt>At work</dt><dd>Climate data analysis and forecasting for polyhouse crops, with dashboards that improved operations planning accuracy by 30%</dd><dt>In this demo</dt><dd>Stat panels, time series with a 7-day forecast range, an hourly temperature heatmap, gauges, a daily status timeline and a colour-coded outlook table</dd><dt>Tools</dt><dd>HTML, CSS, JavaScript and SVG charts, laid out with standard Grafana panel types. Sample data made with a seeded random generator in JavaScript</dd></dl>
+        <div class="plinks"><a href="https://claude.ai/artifact/NT6Lun4gv5pwjJm1vDaoep">Open live dashboard</a></div></div></article>
+      <article class="proj" data-c="Dashboards"><div class="shot">Screenshot</div><div class="pbody">
+        <span class="cat">Dashboards</span><h3>Weather station forecast dashboard</h3>
+        <p>Seven-day forecast that blends our own station data with a bias-corrected weather API.</p>
+        <dl><dt>Tools</dt><dd>InfluxDB, Grafana, Prophet, OpenWeatherMap</dd></dl><span class="tag">Personal build</span></div></article>
+      <article class="proj" data-c="Tools"><div class="shot">Screenshot (sample data)</div><div class="pbody">
+        <span class="cat">Tools</span><h3>Data monitoring watchdogs</h3>
+        <p>Automated checks that flag missing or bad data across units.</p>
+        <dl><dt>Tools</dt><dd>SQL, Python, Grafana</dd><dt>Result</dt><dd>Validation cut from hours to minutes across 100+ units</dd></dl></div></article>
+      <article class="proj" data-c="Tools"><div class="shot">Screenshot (sample data)</div><div class="pbody">
+        <span class="cat">Tools</span><h3>Excel tools for farm optimization</h3>
+        <p>Psychrometric calculator (air density, VPD, humidity deficit), crop variety selection, and production planning with variance analysis.</p>
+        <dl><dt>Tools</dt><dd>Excel</dd><dt>Result</dt><dd>Better yield predictability and planning</dd></dl></div></article>
+      <article class="proj" data-c="Models"><div class="shot">Chart (sample data)</div><div class="pbody">
+        <span class="cat">Models and analysis</span><h3>Sensor placement with cluster analysis</h3>
+        <p>Found the best zones for temperature and humidity sensors inside polyhouses.</p>
+        <dl><dt>Tools</dt><dd>Python, clustering</dd><dt>Result</dt><dd>Sensors cut from 28 to 5 per acre, 80% lower cost</dd></dl></div></article>
+      <article class="proj" data-c="Models"><div class="shot">Chart (sample data)</div><div class="pbody">
+        <span class="cat">Models and analysis</span><h3>Crop yield prediction</h3>
+        <p>Models on climate and crop data to forecast yield trends for production planning.</p>
+        <dl><dt>Tools</dt><dd>Python, regression, Gradient Boosting, Random Forest</dd></dl></div></article>
+      <article class="proj" data-c="Models"><div class="shot">Chart (sample data)</div><div class="pbody">
+        <span class="cat">Models and analysis</span><h3>Production and sales optimization</h3>
+        <p>SQL analysis of production and sales, plus an inventory management model.</p>
+        <dl><dt>Tools</dt><dd>SQL</dd><dt>Result</dt><dd>35% less overstock</dd></dl></div></article>
+      <article class="proj" data-c="Apps"><div class="shot">App screens</div><div class="pbody">
+        <span class="cat">Apps and hardware</span><h3>Internal mobile app for data recording</h3>
+        <p>Tested, deployed and refined the app used for real-time field data entry.</p>
+        <dl><dt>Result</dt><dd>88% better digitization, 65% fewer errors, 70% more productivity</dd></dl></div></article>
+      <article class="proj" data-c="Apps"><div class="shot">Demo video</div><div class="pbody">
+        <span class="cat">Apps and hardware</span><h3>Smart soil sensor and auto-irrigation</h3>
+        <p>Bluetooth soil probe, companion app and a pump that waters from the readings.</p>
+        <dl><dt>Tools</dt><dd>Bluetooth, web and Android app, pump control</dd></dl><span class="tag">In progress</span></div></article>
+    </div>
+  </section>
+
+  <section id="experience">
+    <h2 class="t">Experience</h2>
+    <div class="timeline">
+      <div class="job"><header><h3>Senior Data Analyst, Eeki Automation Pvt. Ltd.</h3><span class="muted">2022 to present</span></header>
+        <ul>
+          <li>Analyse IoT sensor, climate, plant growth, production and plant health data to support operational decisions.</li>
+          <li>Wrote standard data collection procedures that improved data accuracy by 75%.</li>
+          <li>Lead a team of 7 data executives, operators and analysts.</li>
+        </ul></div>
+      <div class="job"><header><h3>Earlier roles</h3><span class="muted">2015 to 2021</span></header>
+        <ul>
+          <li>Assistant Professor, Bal Krishna Institute of Technology (2019 to 2021): taught electrical subjects and analysed academic performance data.</li>
+          <li>Assistant Engineer, Shree Shyam Electrodes (2015 to 2016): ran machine automation with PLC and SCADA, helping raise production by 40%.</li>
+        </ul></div>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="contact">
+      <div>
+        <h2 class="t">Get in touch</h2>
+        <p>Interested in working together or want to talk about farm data? Send me a message.</p>
+        <div class="btns" style="margin-top:16px"><a class="btn primary" href="mailto:yasha.sharma99@gmail.com">Send email</a><a class="btn" href="#top">Download resume</a></div>
+      </div>
+      <div class="rows">
+        <div><span>Email</span>yasha.sharma99@gmail.com</div>
+        <div><span>Location</span>Kota, Rajasthan, India</div>
+        <div><span>LinkedIn</span><a href="https://www.linkedin.com/in/yashasharmaofficial">linkedin.com/in/yashasharmaofficial</a></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">© Yasha Sharma</footer>
+
+<script>
+(function(){
+  var btns=document.querySelectorAll('.filters button'),cards=document.querySelectorAll('.proj');
+  btns.forEach(function(b){b.addEventListener('click',function(){
+    var f=b.getAttribute('data-f');
+    btns.forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});
+    cards.forEach(function(c){c.hidden=!(f==='all'||c.getAttribute('data-c')===f)});
+  })});
+  var root=document.documentElement,tb=document.getElementById('themeBtn');
+  try{var t=localStorage.getItem('theme');if(t)root.setAttribute('data-theme',t)}catch(e){}
+  tb.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme');
+    var dark=cur?cur==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var n=dark?'light':'dark';root.setAttribute('data-theme',n);
+    try{localStorage.setItem('theme',n)}catch(e){}
+  });
+})();
+</script>
+<script>
+(function(){
+if(location.hash!=='#edit')return;
+var D=document,B=D.body,Q=function(s,r){return(r||D).querySelectorAll(s)};
+var SEL='h1,h2,h3,p,li,dd,dt,.logo,nav a,.btn,.plinks a,.tag,.cat,.stat b,.stat span,.muted,.note,.rows div,.sk span,.photo,.avatar,footer';
+var KEYS=['.note','.bar','main','footer'],LS='portfolio-draft',CATS={Dashboards:'Dashboards',Tools:'Tools',Models:'Models and analysis',Apps:'Apps and hardware'};
+function strip(r){Q('.edit-ui',r).forEach(function(n){n.remove()});Q('[contenteditable]',r).forEach(function(n){n.removeAttribute('contenteditable')});Q('[hidden]',r).forEach(function(n){n.removeAttribute('hidden')})}
+function restore(){try{var d=JSON.parse(localStorage.getItem(LS)||'null');if(d)KEYS.forEach(function(k){var el=D.querySelector(k);if(el&&d[k])el.outerHTML=d[k]})}catch(e){}}
+function snap(){var o={};KEYS.forEach(function(k){var el=D.querySelector(k);if(el){var c=el.cloneNode(true);strip(c);o[k]=c.outerHTML}});return o}
+function full(){var h=D.documentElement.cloneNode(true);strip(h);var b=h.querySelector('body');b.classList.remove('editing');if(!b.getAttribute('class'))b.removeAttribute('class');h.removeAttribute('data-theme');Q('.filters button',h).forEach(function(x,i){x.setAttribute('aria-pressed',i===0?'true':'false')});return'<!DOCTYPE html>\n'+h.outerHTML}
+function kind(it){return it.classList.contains('proj')?'proj':it.classList.contains('job')?'job':'sk'}
+function ctl(it){var o=it.querySelector(':scope > .ec');if(o)o.remove();var c=D.createElement('div');c.className='ec edit-ui';
+ c.innerHTML=(it.classList.contains('proj')?'<select aria-label="Category">'+Object.keys(CATS).map(function(k){return'<option value="'+k+'"'+(it.dataset.c===k?' selected':'')+'>'+CATS[k]+'</option>'}).join('')+'</select>':'')+'<button type="button" data-a="up">Up</button><button type="button" data-a="dn">Down</button><button type="button" data-a="cp">Copy</button><button type="button" data-a="rm">Delete</button>';it.appendChild(c)}
+function note(t){var n=D.querySelector('.eb .eh');if(n){var o=n.dataset.o||n.textContent;n.dataset.o=o;n.textContent=t;setTimeout(function(){n.textContent=o},2600)}}
+function askLink(a){var o=D.querySelector('.lp');if(o)o.remove();var p=D.createElement('div');p.className='lp edit-ui';p.innerHTML='<span>Link address</span><input type="text" aria-label="Link address"><button type="button" class="primary" data-t="lok">Apply</button><button type="button" data-t="lno">Cancel</button>';p.querySelector('input').value=a.getAttribute('href')||'';B.appendChild(p);p.querySelector('input').focus();p._a=a}
+function pick(el){var f=D.createElement('input');f.type='file';f.accept='image/*';f.onchange=function(){var fl=f.files[0];if(!fl)return;var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var sq=!el.classList.contains('shot'),c=D.createElement('canvas'),x=c.getContext('2d');
+ if(sq){var s=Math.min(im.width,im.height);c.width=c.height=420;x.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,420,420)}else{var k=Math.min(1,1000/im.width);c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);x.drawImage(im,0,0,c.width,c.height)}
+ el.innerHTML='<img alt="" src="'+c.toDataURL('image/jpeg',.82)+'" style="width:100%;height:100%;object-fit:cover;'+(sq?'border-radius:50%;':'')+'">'};im.src=r.result};r.readAsDataURL(fl)};f.click()}
+function show(){var m=D.createElement('div');m.className='em edit-ui';m.innerHTML='<div><h2>Your updated page</h2><p>Open your portfolio file in your GitHub repository, replace its contents with this code, and commit. The live site updates in a minute or two.</p><textarea readonly aria-label="Updated page code"></textarea><div class="row"><button type="button" class="primary" data-t="copy">Copy code</button><button type="button" data-t="dl">Download file</button><button type="button" data-t="close">Close</button></div></div>';m.querySelector('textarea').value=full();B.appendChild(m)}
+restore();
+B.classList.add('editing');
+Q(SEL).forEach(function(n){n.setAttribute('contenteditable','true')});
+Q('.proj,.job,.sk').forEach(ctl);
+var bar=D.createElement('div');bar.className='eb edit-ui';bar.innerHTML='<b>Edit mode</b><span class="eh">Click any text to change it. Double-click a link to change its address, double-click a photo or screenshot to replace it, click a skill bar to set its level.</span><button type="button" data-t="draft">Save draft</button><button type="button" class="primary" data-t="file">Get updated file</button><button type="button" data-t="exit">Exit</button>';B.appendChild(bar);
+D.addEventListener('click',function(e){
+ var t=e.target;if(!t.closest)return;
+ var a=t.closest('a');if(a&&!a.closest('.edit-ui'))e.preventDefault();
+ var lv=t.closest('.lv');if(lv&&lv.firstElementChild){var r=lv.getBoundingClientRect(),p=Math.max(5,Math.min(100,Math.round((e.clientX-r.left)/r.width*20)*5));lv.firstElementChild.style.width=p+'%';return}
+ var b=t.closest('.ec button');
+ if(b){var it=b.closest('.proj,.job,.sk'),k=kind(it),par=it.parentNode,act=b.dataset.a,pv=it.previousElementSibling,nx=it.nextElementSibling;
+  if(act==='up'&&pv&&pv.classList.contains(k))par.insertBefore(it,pv);
+  else if(act==='dn'&&nx&&nx.classList.contains(k))par.insertBefore(nx,it);
+  else if(act==='cp'){var c=it.cloneNode(true);ctl(c);par.insertBefore(c,it.nextSibling)}
+  else if(act==='rm'){if(b.dataset.arm){it.remove()}else{b.dataset.arm='1';b.textContent='Confirm?';setTimeout(function(){delete b.dataset.arm;b.textContent='Delete'},3000)}}
+  return}
+ var d=t.closest('[data-t]');if(!d)return;var w=d.dataset.t;
+ if(w==='draft'){try{localStorage.setItem(LS,JSON.stringify(snap()));note('Draft saved in this browser. Use Get updated file to publish it.')}catch(x){note('Could not save a draft here. Use Get updated file instead.')}}
+ else if(w==='file')show();
+ else if(w==='close'){var m=d.closest('.em');if(m)m.remove()}
+ else if(w==='copy'){var ta=d.closest('.em').querySelector('textarea');ta.select();var ok=false;try{ok=D.execCommand('copy')}catch(x){}if(!ok&&navigator.clipboard)navigator.clipboard.writeText(ta.value);d.textContent='Copied'}
+ else if(w==='dl'){var bl=new Blob([d.closest('.em').querySelector('textarea').value],{type:'text/html'}),u=URL.createObjectURL(bl),l=D.createElement('a');l.href=u;l.download='index.html';D.body.appendChild(l);l.click();l.remove();setTimeout(function(){URL.revokeObjectURL(u)},1000)}
+ else if(w==='lok'){var p2=d.closest('.lp');p2._a.setAttribute('href',p2.querySelector('input').value);p2.remove()}
+ else if(w==='lno'){d.closest('.lp').remove()}
+ else if(w==='exit'){history.replaceState(null,'',location.pathname+location.search);location.reload()}
+},true);
+D.addEventListener('change',function(e){var s=e.target.closest&&e.target.closest('.ec select');if(s){var it=s.closest('.proj');it.dataset.c=s.value;var ct=it.querySelector('.cat');if(ct)ct.textContent=CATS[s.value]}});
+D.addEventListener('dblclick',function(e){var t=e.target;if(!t.closest||t.closest('.edit-ui'))return;var a=t.closest('a[href]');if(a){askLink(a);return}var ph=t.closest('.photo,.avatar,.shot');if(ph)pick(ph)});
+D.addEventListener('paste',function(e){if(e.target.closest&&e.target.closest('[contenteditable]')){e.preventDefault();D.execCommand('insertText',false,(e.clipboardData||window.clipboardData).getData('text/plain'))}});
+D.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.closest&&e.target.closest('h1,h2,h3,a,.tag,.cat,.logo,dt,.stat b,.stat span,.sk span,.btn,.avatar,.photo')){e.preventDefault();e.target.blur()}});
+})();
+</script>
+</body>
+</html>

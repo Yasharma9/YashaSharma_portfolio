@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crop performance KPI dashboard (sample data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f2f6f7; --surface:#ffffff; --ink:#16232a; --muted:#55666e; --line:#d3dde1;
+  --accent:#00789a; --accent-ink:#ffffff; --soft:#dcecf1; --c2:#c77a12; --warn:#8a6a1f; --warn-bg:#f3ead1;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1a1f; --surface:#16252c; --ink:#e6eef1; --muted:#93a7ae; --line:#26383f;
+    --accent:#3cc3e0; --accent-ink:#07202a; --soft:#1c3640; --c2:#f2b45a; --warn:#e2c46e; --warn-bg:#2e2916;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1a1f; --surface:#16252c; --ink:#e6eef1; --muted:#93a7ae; --line:#26383f;
+  --accent:#3cc3e0; --accent-ink:#07202a; --soft:#1c3640; --c2:#f2b45a; --warn:#e2c46e; --warn-bg:#2e2916;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 "Instrument Sans",system-ui,sans-serif}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px 40px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding:26px 0 18px}
+h1{font-size:clamp(1.6rem,4.5vw,2.3rem)}
+.tag{display:inline-block;font-size:.76rem;border-radius:999px;padding:1px 10px;background:var(--warn-bg);color:var(--warn);margin-left:8px;vertical-align:middle}
+.sub{color:var(--muted);margin:6px 0 0;max-width:62ch;font-size:.95rem}
+.ctl{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+select,.theme{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.9rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:10px}
+.kc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.kc[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--soft)}
+.kn{font:700 .95rem "Bricolage Grotesque",sans-serif}
+.kc b{font:700 1.45rem "Bricolage Grotesque",sans-serif;color:var(--accent)}
+.kc small{font:400 .8rem "Instrument Sans",sans-serif;color:var(--muted);margin-left:3px}
+.kd{font-size:.76rem;color:var(--muted);line-height:1.3}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px;margin-top:16px}
+.panel h2{font-size:1.4rem}
+.note{color:var(--muted);margin:4px 0 16px;font-size:.93rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:14px}
+.tile{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 11px;text-align:left}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.tile span{display:block;font-size:.78rem;color:var(--muted)}
+.tile b{font-size:1.1rem}
+.ch{font-size:.88rem;color:var(--muted);margin:0 0 4px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--muted);font-size:11px;font-family:"Instrument Sans",sans-serif}
+footer{margin-top:18px;color:var(--muted);font-size:.84rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Crop performance dashboard<span class="tag">Sample data</span></h1>
+      <p class="sub">Seven KPI areas tracked weekly across polyhouses, from growth to manpower. Pick an area, then a metric, to see its trend.</p>
+    </div>
+    <div class="ctl">
+      <label class="sub" style="margin:0">Polyhouse <select id="ph"></select></label>
+      <label class="sub" style="margin:0">Show <select id="rg"><option value="26">Full cycle</option><option value="12">Last 12 weeks</option><option value="8">Last 8 weeks</option></select></label>
+      <button class="theme" id="tb" type="button" aria-label="Switch light or dark theme">Theme</button>
+    </div>
+  </div>
+  <div class="cards" id="cards"></div>
+  <section class="panel" id="detail"></section>
+  <footer>All values are randomly generated for this demo. No company data is used. The layout reflects how a weekly crop review dashboard can be organised.</footer>
+</div>
+<script>
+(function(){
+var W=26,PH=['PH-A','PH-B','PH-C','PH-D','PH-E','PH-F'],FS=[.96,1.03,.99,1.05,.94,1.01];
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var S=Math.sin;
+var K=[
+{n:'Growth',note:'Vegetative growth (height, nodes) and reproductive growth (flowers and fruits per cluster).',m:[
+['Plant height','cm',k=>(25+5.6*k.w)*k.f+k.n()*2,0],['Nodes per plant','',k=>6+.85*k.w+k.n()*.5,1],['Flowers per cluster','',k=>4.6-.02*k.w+k.n()*.3,1],['Fruits per cluster','',k=>3.4-.02*k.w+k.n()*.25,1]]},
+{n:'Production',note:'Weekly yield per area and per plant, with the grade distribution of what was harvested.',m:[
+['Yield','kg/m²',k=>k.y,2],['Yield per plant','kg',k=>k.y/3*(1+k.n()*.03),2],['Grade A','%',k=>k.y?k.a:0,0],['Grade B','%',k=>k.y?100-k.a-k.c:0,0],['Grade C','%',k=>k.y?k.c:0,0]]},
+{n:'Quality',note:'Size, weight and colour of harvested produce, checked against grade standards.',m:[
+['Average fruit weight','g',k=>(118+14*S(k.w/5))*k.f+k.n()*4,0],['Length','cm',k=>11.5+.6*S(k.w/5)+k.n()*.3,1],['Diameter','mm',k=>63+3*S(k.w/5)+k.n()*1.2,0],['Colour score','/5',k=>4.1+k.n()*.2,1]]},
+{n:'Nutrition',note:'Water and feed given, and what drains back: volume, EC, pH and irrigation cycles.',m:[
+['Water per plant per day','L',k=>Math.min(1.9,.5+.1*k.w)+k.n()*.05,2],['Irrigation EC','mS/cm',k=>2.4+.015*k.w+k.n()*.08,2],['Irrigation pH','',k=>5.9+k.n()*.12,2],['Drain','%',k=>28+k.n()*3,0],['Irrigation cycles per day','',k=>Math.min(14,5+k.w/3)+k.n()*.4,0]]},
+{n:'Crop protection',note:'Pest and disease incidence, spray activity, and plants removed.',m:[
+['Pest incidence','%',k=>Math.max(0,2+1.5*Math.max(0,S(k.w/3))+k.n()*.5),1],['Disease incidence','%',k=>Math.max(0,1.2+Math.max(0,S((k.w-4)/4))+k.n()*.3),1],['Plants removed','plants',k=>Math.max(0,2+(k.w>14?2:0)+k.n()*2),0],['Sprays done','',k=>Math.max(0,2+k.n()*1.2),0]]},
+{n:'Climate',note:'Dry-bulb and wet-bulb temperature, humidity and solar radiation, with day and night patterns.',m:[
+['Day temperature','°C',k=>27+3*S(k.w/4)+k.n()*.8,1],['Night temperature','°C',k=>17+2.5*S(k.w/4)+k.n()*.7,1],['Wet-bulb temperature','°C',k=>27+3*S(k.w/4)-(28-6*S(k.w/5+1))/5+k.n()*.3,1],['Relative humidity','%',k=>72+6*S(k.w/5+1)+k.n()*3,0],['Solar radiation','MJ/m²',k=>15+6*S(k.w/6)+k.n()*2,1]]},
+{n:'Manpower',note:'Workers present, mandays, and the share of planned work completed.',m:[
+['Work completed','%',k=>Math.min(100,92+k.n()*3),0],['Workers present','',k=>18*k.f+k.n()*1.5,0],['Mandays per week','',k=>100*k.f+k.n()*6,0]]}
+];
+var D={};
+PH.forEach(function(p,i){
+  var r=rng(11+i*7),n=function(){return r()*2-1},f=FS[i];
+  D[p]=K.map(function(c){return c.m.map(function(){return[]})});
+  for(var w=1;w<=W;w++){
+    var y=w<7?0:Math.max(0,(.5+.05*Math.min(w-7,10)-.03*Math.max(0,w-20))*f*(1+n()*.05));
+    var k={w:w,f:f,n:n,y:y,a:74-.3*Math.max(0,w-18)+n()*3,c:6+n()*1.5};
+    K.forEach(function(c,ci){c.m.forEach(function(m,mi){D[p][ci][mi].push(m[2](k))})});
+  }
+});
+D.all=K.map(function(c,ci){return c.m.map(function(m,mi){var o=[];for(var w=0;w<W;w++){var s=0;PH.forEach(function(p){s+=D[p][ci][mi][w]});o.push(s/PH.length)}return o})});
+var st={k:0,m:0,ph:'all',n:26};
+function $(i){return document.getElementById(i)}
+function u(x){return x?(x.charAt(0)==='%'?x:' '+x):''}
+function tail(a){return st.n<W?a.slice(W-st.n):a}
+$('ph').innerHTML='<option value="all">All polyhouses (average)</option>'+PH.map(function(p){return'<option>'+p+'</option>'}).join('');
+function cards(){
+  $('cards').innerHTML=K.map(function(c,i){
+    var m=c.m[0],a=D[st.ph][i][0],l=a[W-1],p=a[W-2],d=p?(l-p)/p*100:0;
+    return'<button type="button" class="kc" data-k="'+i+'" aria-pressed="'+(i===st.k)+'"><span class="kn">'+c.n+'</span><b>'+l.toFixed(m[3])+'<small>'+u(m[1]).trim()+'</small></b><span class="kd">'+m[0]+', '+(d>=0?'+':'−')+Math.abs(d).toFixed(1)+'% vs last week</span></button>';
+  }).join('');
+}
+function chart(a,b,m){
+  var w=640,h=250,l=46,r=12,t=14,bt=30,n=a.length,all=a.concat(b||[]);
+  var mn=Math.min.apply(null,all),mx=Math.max.apply(null,all),pad=(mx-mn||1)*.12;mn-=pad;mx+=pad;
+  var dec=(mx-mn)>20?0:(mx-mn)>2?1:2;
+  function X(i){return l+i*(w-l-r)/(n-1)}function Y(v){return t+(mx-v)*(h-t-bt)/(mx-mn)}
+  function P(s){return s.map(function(v,i){return(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join('')}
+  var s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+m[0]+' trend by week">';
+  for(var g=0;g<=4;g++){var v=mn+(mx-mn)*g/4,y=Y(v);s+='<line x1="'+l+'" x2="'+(w-r)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)"/><text x="'+(l-6)+'" y="'+(y+4)+'" text-anchor="end">'+v.toFixed(dec)+'</text>'}
+  var step=Math.ceil(n/7);
+  for(var i=0;i<n;i+=step)s+='<text x="'+X(i)+'" y="'+(h-8)+'" text-anchor="middle">W'+(W-n+1+i)+'</text>';
+  if(b)s+='<path d="'+P(b)+'" fill="none" stroke="var(--c2)" stroke-width="2" stroke-dasharray="5 4"/>';
+  s+='<path d="'+P(a)+'L'+X(n-1)+' '+Y(mn)+'L'+X(0)+' '+Y(mn)+'Z" fill="var(--accent)" opacity=".12"/><path d="'+P(a)+'" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>';
+  a.forEach(function(v,i){s+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="'+(i===n-1?4.5:3)+'" fill="var(--accent)"><title>Week '+(W-n+1+i)+': '+v.toFixed(m[3])+u(m[1])+'</title></circle>'});
+  return s+'</svg>';
+}
+function detail(){
+  var c=K[st.k],m=c.m[st.m],a=tail(D[st.ph][st.k][st.m]),b=st.ph==='all'?null:tail(D.all[st.k][st.m]);
+  $('detail').innerHTML='<h2>'+c.n+'</h2><p class="note">'+c.note+'</p><div class="tiles">'+c.m.map(function(x,j){
+    var v=D[st.ph][st.k][j][W-1];return'<button type="button" class="tile" data-m="'+j+'" aria-pressed="'+(j===st.m)+'"><span>'+x[0]+'</span><b>'+v.toFixed(x[3])+u(x[1])+'</b></button>'}).join('')+
+  '</div><div class="ch"><span>'+m[0]+(m[1]?' ('+m[1]+')':'')+' by crop-cycle week, '+(st.ph==='all'?'all polyhouses':st.ph)+'</span>'+(b?'<span>Dashed line: average of all polyhouses</span>':'')+'</div>'+chart(a,b,m);
+}
+function all(){cards();detail()}
+$('cards').addEventListener('click',function(e){var b=e.target.closest('[data-k]');if(b){st.k=+b.dataset.k;st.m=0;all()}});
+$('detail').addEventListener('click',function(e){var b=e.target.closest('[data-m]');if(b){st.m=+b.dataset.m;detail()}});
+$('ph').addEventListener('change',function(e){st.ph=e.target.value;all()});
+$('rg').addEventListener('change',function(e){st.n=+e.target.value;detail()});
+var root=document.documentElement;
+try{var t=localStorage.getItem('theme');if(t)root.setAttribute('data-theme',t)}catch(e){}
+$('tb').addEventListener('click',function(){var c=root.getAttribute('data-theme'),d=c?c==='dark':matchMedia('(prefers-color-scheme: dark)').matches,n=d?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}});
+all();
+})();
+</script>
+</body>
+</html>

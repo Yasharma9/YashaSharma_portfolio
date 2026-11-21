@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Weather station dashboard with 7-day forecast (sample data)</title>
+<style>
+:root{--bg:#f4f5f5;--pn:#fff;--bd:#dcdddf;--tx:#24292e;--mu:#6c6f7a;--ok:#2f8a3a;--wa:#a67c00;--bad:#d1263c;--bl:#1f60c4;--or:#e8590c;--gt:#e6eaf5;--fc:rgba(31,96,196,.06);--hv:#eceef0;--bar:#e3e5e8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#111217;--pn:#181b1f;--bd:#2c3235;--tx:#ccccdc;--mu:#8e8e9d;--ok:#73bf69;--wa:#f2cc0c;--bad:#f2495c;--bl:#5794f2;--or:#ff9830;--gt:#2a3340;--fc:rgba(87,148,242,.08);--hv:#22252b;--bar:#2c3235}}
+:root[data-theme="dark"]{--bg:#111217;--pn:#181b1f;--bd:#2c3235;--tx:#ccccdc;--mu:#8e8e9d;--ok:#73bf69;--wa:#f2cc0c;--bad:#f2495c;--bl:#5794f2;--or:#ff9830;--gt:#2a3340;--fc:rgba(87,148,242,.08);--hv:#22252b;--bar:#2c3235}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 13px/1.45 Inter,"Segoe UI",system-ui,sans-serif}
+select,button{font:inherit;color:inherit;background:var(--pn);border:1px solid var(--bd);border-radius:2px;padding:4px 8px}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--bl);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:10px 12px 28px}
+.ttl{text-align:center;color:#a8b000;font-size:clamp(1.5rem,4vw,2.3rem);font-weight:500;margin:4px 0 8px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:4px 0 10px}
+.tag{font-size:.72rem;border-radius:2px;padding:1px 8px;background:rgba(242,204,12,.2);color:var(--wa)}
+.vr{display:flex;align-items:center}.vr span{background:var(--hv);border:1px solid var(--bd);border-right:0;padding:4px 8px;color:var(--mu)}
+.g{display:grid;grid-template-columns:repeat(12,1fr);gap:8px}
+.pn{grid-column:span var(--sp);background:var(--pn);border:1px solid var(--bd);border-radius:2px;min-width:0}
+.pn h3{margin:0;padding:7px 10px;font-size:.86rem;font-weight:500}.bd{padding:0 10px 10px}
+.sec{grid-column:1/-1;background:#000;color:#c9d400;text-align:center;font-size:1.45rem;padding:3px 8px;margin-top:6px}
+.loc{grid-column:1/-1;background:var(--pn);border:1px solid var(--bd);padding:10px 14px;font-size:1.35rem;font-weight:500}.loc b{color:#d00}.loc i{font-style:normal;color:#1a1aa6}
+.last{grid-column:1/-1;background:linear-gradient(90deg,#e8636a,#e0436b);color:#fff;text-align:center;padding:6px;border-radius:2px}.last b{display:block;font-size:1.6rem;font-weight:500}
+.sv{font-size:1.9rem;font-weight:500;line-height:1.15}.sv small{font-size:.85rem;color:var(--mu);margin-left:3px}.sd{color:var(--mu);font-size:.78rem}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--mu);font-size:10.5px;font-family:inherit}
+.lg{display:flex;gap:12px;flex-wrap:wrap;color:var(--mu);font-size:.78rem;margin-top:4px}.lg i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle;background:var(--cc)}
+table{width:100%;border-collapse:collapse;font-size:.8rem}th,td{padding:5px 8px;text-align:right;border-bottom:1px solid var(--bd);white-space:nowrap}th:first-child,td:first-child{text-align:left}th{color:var(--mu);font-weight:500}.tw{overflow-x:auto}
+.fcs{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.fcd{border:1px solid var(--bd);border-radius:4px;padding:8px;font-size:.78rem;text-align:center;background:var(--bg)}
+.fcd b{display:block;font-size:.9rem}.fcd .tm{font-size:1.05rem;font-weight:500;margin:2px 0}.fcd .tm span{color:var(--mu);font-weight:400}.fcd svg{width:42px;height:42px;margin:2px auto}.fcd div{color:var(--mu)}
+.two{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.two ul{list-style:none;margin:0;padding:0;font-size:.78rem}.two li::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;background:var(--cc)}
+.nt{margin-top:10px;color:var(--mu);font-size:.8rem;max-width:115ch}
+@media (max-width:860px){.pn{grid-column:1/-1}.pn.h{grid-column:span 6}.fcs{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="ttl" id="ttl"></div>
+  <div class="bar">
+    <span class="tag">Sample data</span>
+    <div class="vr"><span>Station</span><select id="stn" aria-label="Station"><option value="0">ws_001</option><option value="1">ws_002</option><option value="2">ws_003</option></select></div>
+    <div class="vr"><span>History</span><select id="hs" aria-label="History"><option value="1">Last 24 hours</option><option value="3" selected>Last 3 days</option><option value="7">Last 7 days</option></select></div>
+    <div class="vr"><span>Forecast</span><select id="fh" aria-label="Forecast horizon"><option value="1">Next 24 hours</option><option value="3">Next 3 days</option><option value="7" selected>Next 7 days</option></select></div>
+    <button id="tb" type="button" style="margin-left:auto" aria-label="Switch light or dark theme">Theme</button>
+  </div>
+  <div class="g" id="g"></div>
+  <p class="nt">How to read this: solid lines are station readings and dashed lines with a shaded band are the forecast. The forecast in this sample is simulated as a blend of the station’s own recent daily pattern, which counts most in the first hours, and a bias-corrected outside forecast, which counts more later in the week. The shaded band shows the likely range and widens with time. Absolute humidity, wet-bulb temperature, dew point, DLI, rain intensity and gust are calculated from the recorded values. All data is randomly generated.</p>
+</div>
+<script>
+(function(){
+var H=36e5,DAY=864e5,M15=9e5,NOW=Date.UTC(2026,10,21,13,15),NB=672,NF=168,T0=NOW-(NB-1)*M15,S=Math.sin,C=Math.cos,TP=Math.PI*2,RD=Math.PI/180;
+var MO='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' '),WK='Sun Mon Tue Wed Thu Fri Sat'.split(' '),DR='N NNE NE ENE E ESE SE SSE S SSW SW WSW W WNW NW NNW'.split(' ');
+var $=function(i){return document.getElementById(i)},sum=function(a){return a.reduce(function(x,y){return x+y},0)},mean=function(a){return a.length?sum(a)/a.length:0},cl=function(v,a,b){return Math.max(a,Math.min(b,v))},p2=function(n){return(n<10?'0':'')+n};
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function es(t){return 6.112*Math.exp(17.62*t/(243.12+t))}
+function dewp(T,RH){var g=Math.log(Math.max(1,RH)/100)+17.62*T/(243.12+T);return 243.12*g/(17.62-g)}
+function wbt(T,RH){return T*Math.atan(.151977*Math.sqrt(RH+8.313659))+Math.atan(T+RH)-Math.atan(RH-1.676331)+.00391838*Math.pow(RH,1.5)*Math.atan(.023101*RH)-4.686035}
+function ahum(T,RH){return 216.7*(RH/100*es(T))/(273.15+T)}
+function clearSky(t){var d=new Date(t),n=Math.floor((t-Date.UTC(d.getUTCFullYear(),0,0))/DAY),dec=23.44*S(TP*(284+n)/365)*RD,la=25.18*RD,hrs=(t%DAY)/H,ha=15*(hrs-.45-12)*RD,se=S(la)*S(dec)+C(la)*C(dec)*C(ha);return se>0?1050*Math.pow(se,1.15):0}
+function fdt(t){var d=new Date(t);return d.getUTCFullYear()+'-'+p2(d.getUTCMonth()+1)+'-'+p2(d.getUTCDate())+' '+p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())+':00'}
+function sdt(t){var d=new Date(t);return d.getUTCDate()+' '+MO[d.getUTCMonth()]+' '+p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())}
+function sim(si){
+ var r=rng(900+si*37),n=function(){return r()*2-1},ds=Math.floor(T0/DAY)*DAY,nd=17,cld=[],an=[],pa=[],wf=[],dr=[],tdd=[],x=[0,0,0,0,0],dir=300,i,k;
+ for(i=0;i<nd;i++){x[0]=.55*x[0]+.45*n();x[1]=.7*x[1]+.5*n();x[2]=.8*x[2]+.3*n();x[3]=.6*x[3]+.4*n();x[4]=.6*x[4]+.4*n();dir+=n()*55;cld.push(cl(.2+.35*x[0],0,1));an.push(2.2*x[1]);pa.push(4*x[2]);wf.push(1+.35*x[3]);dr.push(dir);tdd.push(1.5*x[4])}
+ var dv=function(a,t){var f=(t-ds)/DAY-.5,j=cl(Math.floor(f),0,nd-2),w=f-j;return a[j]*(1-w)+a[j+1]*w};
+ var ev=[{c:ds+4*DAY+16*H,d:3,p:5},{c:ds+11*DAY+19*H,d:4,p:8},{c:ds+13*DAY+2*H,d:2,p:1.2}];
+ var A={T:[],RH:[],P:[],WS:[],G:[],WD:[],TSR:[],PAR:[],PW:[],RN:[],TD:[],WB:[],AH:[]},tot=NB+4*NF,kn=0,tn=0,t,env,rate,hr,sh,ce,kc;
+ for(i=0;i<tot;i++){
+  t=T0+i*M15;hr=(t%DAY)/H;sh=S(TP*(hr-8.5)/24);env=0;rate=0;
+  ev.forEach(function(e){env=Math.max(env,Math.exp(-Math.pow((t-e.c)/(e.d*H*.9),2)));rate+=e.p*Math.exp(-Math.pow((t-e.c)/(e.d*H/2.2),2))*(.6+.8*r())});
+  ce=cl(dv(cld,t)+.6*env,0,1);kn=.9*kn+.1*n();kc=cl(1-.8*ce+kn*.5,.05,1);tn=.9*tn+.1*n();
+  var d=new Date(t),doy=Math.floor((t-Date.UTC(d.getUTCFullYear(),0,0))/DAY),tm=22+8*S(TP*(doy-110)/365),
+   T=tm+dv(an,t)+(3.5+4*(1-ce))*sh-4*env+tn*1.2,Td=Math.min(7.5+dv(tdd,t)+3*env-1.2*sh+tn*.6,T-.4),RH=cl(100*es(Td)/es(T),12,100),pr=0;
+  ev.forEach(function(e){pr+=6*Math.exp(-Math.pow((t-e.c+3*H)/(e.d*H*2.2),2))});
+  var P=985+dv(pa,t)+.9*S(TP*(hr-4)/12)-pr+n()*.08,ws=Math.max(.4,3.5+9*Math.max(0,sh+.15)*dv(wf,t)+3*env+n()*1.2),wd=((dv(dr,t)+30*sh+25*n())%360+360)%360,ts=clearSky(t)*kc;
+  A.T.push(T);A.RH.push(RH);A.P.push(P);A.WS.push(ws);A.G.push(ws*(1.3+.3*r())+1.5*env);A.WD.push(wd);A.TSR.push(ts);A.PAR.push(ts*2.05);A.PW.push(ts*.45);A.RN.push(Math.round(rate/4/.2)*.2);
+  A.TD.push(dewp(T,RH));A.WB.push(wbt(T,RH));A.AH.push(ahum(T,RH));
+ }
+ var O={},F={T:[],RH:[],P:[],WS:[],G:[],WD:[],TSR:[],PAR:[],PW:[],RN:[],TD:[],WB:[],AH:[],bT:[],bRH:[],bP:[],bWS:[],bTSR:[]},e={T:0,RH:0,P:0,WS:0,WD:0,S:0},Rh=[],idx,g,j;
+ for(k=0;k<=NF+1;k++){idx=NB-1+4*k;Rh.push(idx<tot?sum(A.RN.slice(idx-3,idx+1))*1:0)}
+ for(k=1;k<=NF;k++){
+  idx=NB-1+4*k;g=k/NF;e.T=.93*e.T+n()*(.25+.35*g);e.RH=.93*e.RH+n()*(1.5+3*g);e.P=.95*e.P+n()*(.2+.5*g);e.WS=.9*e.WS+n()*(.8+1.5*g);e.WD=.95*e.WD+n()*(8+.12*k);e.S=.9*e.S+n()*(.05+.12*g);
+  var T=A.T[idx]+e.T,RH=cl(A.RH[idx]+e.RH,10,100),ws=Math.max(.4,A.WS[idx]+e.WS),ts=Math.max(0,mean(A.TSR.slice(idx-3,idx+1))*(1+e.S)),ck=clearSky(NOW+k*H);
+  F.T.push(T);F.RH.push(RH);F.P.push(A.P[idx]+e.P);F.WS.push(ws);F.G.push(ws*(1.35+.2*r()));F.WD.push(((A.WD[idx]+e.WD)%360+360)%360);F.TSR.push(ts);F.PAR.push(ts*2.05);F.PW.push(ts*.45);
+  F.RN.push(Math.round(Math.max(0,(.25*Rh[k-1]+.5*Rh[k]+.25*Rh[k+1])*(.85+.3*r()))*10)/10);
+  F.TD.push(dewp(T,RH));F.WB.push(wbt(T,RH));F.AH.push(ahum(T,RH));
+  F.bT.push(1.28*(.6+1.5*g));F.bRH.push(1.28*(3+9*g));F.bP.push(1.28*(.7+3*g));F.bWS.push(1.28*(2+5*g));F.bTSR.push(1.28*(.08+.22*g)*ck);
+ }
+ return{A:A,F:F};
+}
+var DS={};function data(i){return DS[i]||(DS[i]=sim(i))}
+var st={s:0,h:3,f:7},D;
+function oS(a){return{t0:T0,dt:M15,v:a}}
+function fS(a){return{t0:NOW+H,dt:H,v:a}}
+function band(f,b,s){return{lo:f.map(function(v,i){return v-b[i]*(s||1)}),hi:f.map(function(v,i){return v+b[i]*(s||1)})}}
+function tsc(o){
+ var w=640,h=o.h||230,l=46,rr=o.rax?46:12,t=8,b=22,x0=o.x0,x1=o.x1,pw=w-l-rr,ax={l:[1e9,-1e9],r:[1e9,-1e9]};
+ var X=function(ts){return l+(ts-x0)/(x1-x0)*pw},up=function(a,v){if(v==null||v!==v)return;if(v<ax[a][0])ax[a][0]=v;if(v>ax[a][1])ax[a][1]=v};
+ var vis=function(g){return[Math.max(0,Math.ceil((x0-g.t0)/g.dt)),Math.min(g.v.length-1,Math.floor((x1-g.t0)/g.dt))]};
+ o.ser.forEach(function(s){[s.o,s.f].forEach(function(g){if(!g)return;var v=vis(g);for(var i=v[0];i<=v[1];i++)up(s.ax,g.v[i])});
+  if(s.lo){var v=vis(s.f);for(var i=v[0];i<=v[1];i++){up(s.ax,s.lo[i]);up(s.ax,s.hi[i])}}if(s.type==='bar')up(s.ax,0)});
+ (o.th||[]).forEach(function(q){up(q.ax||'l',q.v)});if(o.zone)up('l',o.zone[0]),up('l',o.zone[1]);
+ ['l','r'].forEach(function(a){var q=ax[a];if(q[0]>q[1]){q[0]=0;q[1]=1}var p=(q[1]-q[0]||1)*.08;q[1]+=p;if(!o.bar||q[0]!==0)q[0]-=p;if(o.min0&&a==='l')q[0]=Math.max(0,q[0])});
+ var Y=function(a,v){return t+(ax[a][1]-v)*(h-t-b)/(ax[a][1]-ax[a][0])},dec=function(a){var r=ax[a][1]-ax[a][0];return r>20?0:r>2?1:2};
+ var s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+o.t+'"><rect x="'+X(NOW)+'" y="'+t+'" width="'+Math.max(0,w-rr-X(NOW))+'" height="'+(h-t-b)+'" fill="var(--fc)"/>',g,i;
+ if(o.zone)s+='<rect x="'+l+'" y="'+Y('l',o.zone[1])+'" width="'+pw+'" height="'+(Y('l',o.zone[0])-Y('l',o.zone[1]))+'" fill="var(--ok)" opacity=".13"/>';
+ for(g=0;g<=4;g++){var v=ax.l[0]+(ax.l[1]-ax.l[0])*g/4,y=Y('l',v);s+='<line x1="'+l+'" x2="'+(w-rr)+'" y1="'+y+'" y2="'+y+'" stroke="var(--bd)"/><text x="'+(l-5)+'" y="'+(y+3)+'" text-anchor="end">'+v.toFixed(dec('l'))+'</text>';
+  if(o.rax){var v2=ax.r[0]+(ax.r[1]-ax.r[0])*g/4;s+='<text x="'+(w-rr+5)+'" y="'+(y+3)+'" style="fill:'+o.rax+'">'+v2.toFixed(dec('r'))+'</text>'}}
+ var sp=(x1-x0)/DAY,need=sp*24/9,stp=([3,6,12,24].filter(function(z){return z>=need})[0]||24)*H;
+ for(var tk=Math.ceil(x0/stp)*stp;tk<=x1;tk+=stp){var dd=new Date(tk);s+='<line x1="'+X(tk)+'" x2="'+X(tk)+'" y1="'+t+'" y2="'+(h-b)+'" stroke="var(--bd)" opacity=".5"/><text x="'+X(tk)+'" y="'+(h-6)+'" text-anchor="middle">'+(tk%DAY===0?dd.getUTCDate()+' '+MO[dd.getUTCMonth()]:p2(dd.getUTCHours())+':00')+'</text>'}
+ (o.th||[]).forEach(function(q){s+='<line x1="'+l+'" x2="'+(w-rr)+'" y1="'+Y(q.ax||'l',q.v)+'" y2="'+Y(q.ax||'l',q.v)+'" stroke="'+q.c+'" stroke-dasharray="5 4" opacity=".9"/>'});
+ var pts=function(gr,a,wp){var d='',on=false,vv=vis(gr);for(var i=vv[0];i<=vv[1];i++){var q=gr.v[i];if(q==null){on=false;continue}d+=(on?'L':'M')+X(gr.t0+i*gr.dt).toFixed(1)+' '+Y(a,q).toFixed(1);on=true}return d};
+ o.ser.forEach(function(q){
+  if(q.type==='bar'){[q.o,q.f].forEach(function(gr,gi){var vv=vis(gr),bw=Math.max(1.2,gr.dt/(x1-x0)*pw*.82);for(var i=vv[0];i<=vv[1];i++){var val=gr.v[i];if(val>0)s+='<rect x="'+(X(gr.t0+i*gr.dt)-bw/2)+'" y="'+Y(q.ax,val)+'" width="'+bw+'" height="'+(Y(q.ax,0)-Y(q.ax,val))+'" fill="'+q.c+'" opacity="'+(gi?.55:.95)+'"><title>'+sdt(gr.t0+i*gr.dt)+(gi?' (forecast)':'')+': '+val.toFixed(1)+o.u+'</title></rect>'}});return}
+  var lastI=Math.min(q.o.v.length-1,Math.floor((x1-q.o.t0)/q.o.dt)),lt=q.o.t0+lastI*q.o.dt,lv=q.o.v[lastI];
+  if(q.f&&q.lo){var vv=vis(q.f),up2='M'+X(lt)+' '+Y(q.ax,lv),dn='';for(var i=vv[0];i<=vv[1];i++){up2+='L'+X(q.f.t0+i*q.f.dt).toFixed(1)+' '+Y(q.ax,q.hi[i]).toFixed(1);dn='L'+X(q.f.t0+i*q.f.dt).toFixed(1)+' '+Y(q.ax,q.lo[i]).toFixed(1)+dn}s+='<path d="'+up2+dn+'Z" fill="'+q.c+'" opacity=".2"/>'}
+  if(q.f)s+='<path d="M'+X(lt)+' '+Y(q.ax,lv)+pts(q.f,q.ax).replace(/^M/,'L')+'" fill="none" stroke="'+q.c+'" stroke-width="2" stroke-dasharray="5 4"/>';
+  s+='<path d="'+pts(q.o,q.ax)+'" fill="none" stroke="'+q.c+'" stroke-width="'+(q.w||1.8)+'"'+(q.dash?' stroke-dasharray="'+q.dash+'"':'')+' stroke-linejoin="round"/>'});
+ s+='<line x1="'+X(NOW)+'" x2="'+X(NOW)+'" y1="'+t+'" y2="'+(h-b)+'" stroke="var(--mu)" stroke-dasharray="3 3"/><text x="'+(X(NOW)+4)+'" y="'+(t+10)+'">Now</text>';
+ if(o.arr){var as=3*H;for(var ta=Math.ceil(x0/as)*as;ta<=x1;ta+=as){var gr=ta<=NOW?o.arr.o:o.arr.f,ii=Math.round((ta-gr.t0)/gr.dt);if(ii<0||ii>=gr.v.length)continue;s+='<path d="M0 -6L4 5L0 2.5L-4 5Z" transform="translate('+X(ta).toFixed(1)+' '+(h-b-10)+') rotate('+((gr.v[ii]+180)%360).toFixed(0)+')" fill="'+o.arr.c+'" opacity="'+(ta<=NOW?1:.55)+'"><title>'+sdt(ta)+': wind from '+DR[Math.round(gr.v[ii]/22.5)%16]+' ('+gr.v[ii].toFixed(0)+'°)</title></path>'}}
+ var hs=Math.max(1,Math.ceil((x1-x0)/H/190));
+ for(var th2=Math.ceil(x0/H)*H;th2<=x1;th2+=H*hs){s+='<rect x="'+(X(th2)-pw*H*hs/(x1-x0)/2)+'" y="'+t+'" width="'+(pw*H*hs/(x1-x0))+'" height="'+(h-t-b)+'" fill="transparent"><title>'+sdt(th2)+(th2>NOW?' (forecast)':'')+o.ser.map(function(q){var gr=th2<=NOW?q.o:q.f,ii=gr?Math.round((th2-gr.t0)/gr.dt):-1,vv=gr&&ii>=0&&ii<gr.v.length?gr.v[ii]:null;return'\n'+q.n+': '+(vv==null?'–':vv.toFixed(q.dec==null?1:q.dec))+(q.u||o.u)}).join('')+'</title></rect>'}
+ return s+'</svg><div class="lg">'+o.ser.map(function(q){return'<span><i style="--cc:'+q.c+'"></i>'+q.n+'</span>'}).join('')+'<span>Dashed and shaded: forecast</span>'+(o.th||[]).map(function(q){return'<span><i style="--cc:'+q.c+'"></i>'+q.n+'</span>'}).join('')+'</div>';
+}
+function pan(sp,t,b,c){return'<section class="pn '+(c||'')+'" style="--sp:'+sp+'"><h3>'+t+'</h3><div class="bd">'+b+'</div></section>'}
+function sec(t){return'<div class="sec">'+t+'</div>'}
+function pol(cx,cy,r,a){var x=a*RD;return[cx+r*S(x),cy-r*C(x)]}
+function arc(cx,cy,r,a0,a1){var p=pol(cx,cy,r,a0),q=pol(cx,cy,r,a1);return'M'+p[0].toFixed(1)+' '+p[1].toFixed(1)+'A'+r+' '+r+' 0 '+(a1-a0>180?1:0)+' 1 '+q[0].toFixed(1)+' '+q[1].toFixed(1)}
+function arcG(v,mn,mx,major,col,txt,lab){var f=cl((v-mn)/(mx-mn),0,1),s='<svg viewBox="0 0 200 150" role="img" aria-label="'+lab+'"><path d="'+arc(100,98,64,-120,120)+'" fill="none" stroke="var(--gt)" stroke-width="15" stroke-linecap="round"/>'+(f>0?'<path d="'+arc(100,98,64,-120,-120+240*f)+'" fill="none" stroke="'+col+'" stroke-width="15" stroke-linecap="round"/>':'');
+ for(var k=mn;k<=mx+1e-9;k+=major){var a=-120+240*(k-mn)/(mx-mn),p=pol(100,98,78,a),q=pol(100,98,73,a),tx=pol(100,98,89,a);s+='<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="var(--mu)"/><text x="'+tx[0]+'" y="'+(tx[1]+3)+'" text-anchor="middle" style="font-size:9px">'+k+'</text>'}
+ return s+'<text x="100" y="132" text-anchor="middle" style="font-size:23px;font-weight:500;fill:'+col+'">'+txt+'</text></svg>'}
+function dialG(v,mn,mx,major,minor,txt,lab){var s='<svg viewBox="0 0 200 200" role="img" aria-label="'+lab+'"><circle cx="100" cy="100" r="86" fill="none" stroke="var(--gt)" stroke-width="10"/>',k,a,p,q,tx;
+ for(k=mn;k<=mx+1e-9;k+=minor){a=-135+270*(k-mn)/(mx-mn);p=pol(100,100,78,a);q=pol(100,100,((k-mn)%major<1e-9)?68:73,a);s+='<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="var(--mu)"/>'}
+ for(k=mn;k<=mx+1e-9;k+=major){a=-135+270*(k-mn)/(mx-mn);tx=pol(100,100,56,a);s+='<text x="'+tx[0]+'" y="'+(tx[1]+3)+'" text-anchor="middle" style="font-size:9.5px">'+k+'</text>'}
+ var na=-135+270*cl((v-mn)/(mx-mn),0,1),n=pol(100,100,50,na);
+ return s+'<line x1="100" y1="100" x2="'+n[0]+'" y2="'+n[1]+'" stroke="#4a68c9" stroke-width="3.5" stroke-linecap="round"/><circle cx="100" cy="100" r="7" fill="var(--pn)" stroke="#4a68c9" stroke-width="3.5"/><text x="100" y="170" text-anchor="middle" style="font-size:19px;font-weight:600;fill:var(--tx)">'+txt+'</text></svg>'}
+function liquid(v,sub){var y=170-cl(v,0,100)/100*140;return'<svg viewBox="0 0 200 200" role="img" aria-label="Relative humidity '+v.toFixed(0)+'%"><defs><clipPath id="lq"><circle cx="100" cy="100" r="76"/></clipPath><linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe9f5"/><stop offset="1" stop-color="#eaf5fb"/></linearGradient></defs><circle cx="100" cy="100" r="92" fill="none" stroke="#2c4a9a" stroke-width="9"/><circle cx="100" cy="100" r="78" fill="url(#lg)" stroke="var(--pn)" stroke-width="4"/><g clip-path="url(#lq)"><path d="M10 '+y+'Q35 '+(y-9)+' 60 '+y+'T110 '+y+'T160 '+y+'T210 '+y+'V190H10Z" fill="#7fb3d9" opacity=".55"/><path d="M10 '+(y+4)+'Q35 '+(y-5)+' 60 '+(y+4)+'T110 '+(y+4)+'T160 '+(y+4)+'T210 '+(y+4)+'V190H10Z" fill="#2f4f9c"/></g><text x="100" y="112" text-anchor="middle" style="font-size:34px;font-weight:700;fill:#fff">'+v.toFixed(0)+'%</text>'+(sub?'<text x="100" y="196" text-anchor="middle">'+sub+'</text>':'')+'</svg>'}
+function rainG(rate,hr){var segs=[[0,2.5,'#ffd54a'],[2.5,7.6,'#7fe0a8'],[7.6,50,'#ff6b7a']],s='<svg viewBox="0 0 200 150" role="img" aria-label="Rain gauge">',mx=50;
+ segs.forEach(function(q){s+='<path d="'+arc(100,98,64,-120+240*q[0]/mx,-120+240*q[1]/mx)+'" fill="none" stroke="'+q[2]+'" stroke-width="12"/>'});
+ var a=-120+240*cl(rate,0,mx)/mx,p=pol(100,98,50,a),q=pol(100,98,72,a);
+ return s+'<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#2aa9d6" stroke-width="5" stroke-linecap="round"/><text x="100" y="116" text-anchor="middle" style="font-size:20px;font-weight:500;fill:#2aa9d6">'+hr.toFixed(3)+' mm</text><text x="100" y="134" text-anchor="middle">Rain, last hour</text><text x="176" y="62" style="font-size:9px">Heavy</text></svg>'}
+function compass(d){var p=pol(30,30,22,d);return'<svg viewBox="0 0 60 60" style="width:56px;margin:0 auto" role="img" aria-label="Wind from '+d.toFixed(0)+' degrees"><circle cx="30" cy="30" r="18" fill="var(--tx)"/><line x1="30" y1="14" x2="30" y2="46" stroke="var(--pn)" stroke-width="2"/><line x1="14" y1="30" x2="46" y2="30" stroke="var(--pn)" stroke-width="2"/><path d="M0 -4L4 3L-4 3Z" transform="translate('+p[0].toFixed(1)+' '+p[1].toFixed(1)+') rotate('+d.toFixed(0)+')" fill="#d00"/></svg>'}
+function rose(counts){var tot=sum(counts)||1,mx=Math.max.apply(null,counts)||1,R=78,s='<svg viewBox="0 0 220 220" role="img" aria-label="Wind rose">';
+ [.25,.5,.75,1].forEach(function(g){s+='<circle cx="110" cy="110" r="'+R*g+'" fill="none" stroke="var(--bd)"/>'});
+ counts.forEach(function(c,i){if(!c)return;var r=R*c/mx,a0=i*22.5-10,a1=i*22.5+10,p=pol(110,110,r,a0),q=pol(110,110,r,a1);s+='<path d="M110 110L'+p[0].toFixed(1)+' '+p[1].toFixed(1)+'A'+r+' '+r+' 0 0 1 '+q[0].toFixed(1)+' '+q[1].toFixed(1)+'Z" fill="hsl('+(i*22.5)+',75%,52%)"><title>'+DR[i]+': '+c+' records ('+(c/tot*100).toFixed(1)+'%)</title></path>'});
+ [['N',0],['NE',45],['E',90],['SE',135],['S',180],['SW',225],['W',270],['NW',315]].forEach(function(q){var p=pol(110,110,R+14,q[1]);s+='<text x="'+p[0]+'" y="'+(p[1]+3)+'" text-anchor="middle">'+q[0]+'</text>'});
+ return s+'</svg>'}
+function pie(counts){var tot=sum(counts)||1,ang=0,s='<svg viewBox="0 0 220 220" style="max-width:220px" role="img" aria-label="Wind direction share">',lg='';
+ counts.forEach(function(c,i){if(!c)return;var a1=ang+c/tot*360,col='hsl('+(i*22.5)+',75%,52%)';
+  if(c===tot)s+='<circle cx="110" cy="110" r="90" fill="'+col+'"/>';else{var p=pol(110,110,90,ang),q=pol(110,110,90,a1);s+='<path d="M110 110L'+p[0].toFixed(1)+' '+p[1].toFixed(1)+'A90 90 0 '+(a1-ang>180?1:0)+' 1 '+q[0].toFixed(1)+' '+q[1].toFixed(1)+'Z" fill="'+col+'" stroke="var(--pn)" stroke-width="1.5"><title>'+DR[i]+': '+c+' ('+(c/tot*100).toFixed(1)+'%)</title></path>'}
+  lg+='<li style="--cc:'+col+'">'+DR[i]+': '+c+' ('+(c/tot*100).toFixed(1)+'%)</li>';ang=a1});
+ return'<div class="two">'+s+'</svg><ul>'+lg+'</ul></div>'}
+function counts(dirs){var c=[];for(var i=0;i<16;i++)c.push(0);dirs.forEach(function(d){c[Math.round(d/22.5)%16]++});return c}
+function slice(g,a,b){var i0=Math.max(0,Math.ceil((a-g.t0)/g.dt)),i1=Math.min(g.v.length-1,Math.floor((b-g.t0)/g.dt));return g.v.slice(i0,i1+1)}
+function mmm(o,f){var a=o.concat(f||[]);return a.length?[Math.min.apply(null,a),Math.max.apply(null,a),mean(a)]:[0,0,0]}
+function stat(sp,t,v,u,sub,col){return pan(sp,t,'<div class="sv" style="color:'+(col||'var(--tx)')+'">'+v+'<small>'+u+'</small></div><div class="sd">'+sub+'</div>','h')}
+function minmax(rows,x0,x1){return'<div class="tw"><table><thead><tr><th>Name</th><th>Observed min</th><th>max</th><th>mean</th><th>Forecast min</th><th>max</th><th>mean</th></tr></thead><tbody>'+rows.map(function(r){var a=mmm(slice(oS(r[1]),x0,NOW)),b=mmm(slice(fS(r[2]),NOW,x1));return'<tr><td><i style="display:inline-block;width:12px;height:3px;background:'+r[4]+';margin-right:6px;vertical-align:middle"></i>'+r[0]+'</td>'+a.concat(b).map(function(v){return'<td>'+v.toFixed(r[3])+'</td>'}).join('')+'</tr>'}).join('')+'</tbody></table></div>'}
+function icon(k){var sun='<circle cx="22" cy="22" r="8" fill="#f5a623"/>'+[0,45,90,135,180,225,270,315].map(function(a){var p=pol(22,22,12,a),q=pol(22,22,16,a);return'<line x1="'+p[0]+'" y1="'+p[1]+'" x2="'+q[0]+'" y2="'+q[1]+'" stroke="#f5a623" stroke-width="2.5" stroke-linecap="round"/>'}).join(''),
+ cloud='<path d="M14 36h20a7 7 0 0 0 0-14 9 9 0 0 0-17-2 6 6 0 0 0-3 16z" fill="#9aa5b1"/>',drops='<path d="M17 40l-2 4M25 40l-2 4M33 40l-2 4" stroke="#3b82f6" stroke-width="2.4" stroke-linecap="round"/>';
+ var inner=k==='Sunny'?sun:k==='Partly cloudy'?'<g transform="translate(-6 -8) scale(.8)">'+sun+'</g><g transform="translate(6 4) scale(.85)">'+cloud+'</g>':k==='Rain'?cloud+drops:cloud;
+ return'<svg viewBox="0 0 44 48" aria-hidden="true">'+inner+'</svg>'}
+function days(){var A=D.A,F=D.F,d0=Math.floor(NOW/DAY),out=[];
+ for(var d=0;d<7;d++){var key=d0+d,T=[],RH=[],P=[],WS=[],G=[],WD=[],rn=0,ts=0,ck=0,par=0,u=[],v=[];
+  for(var i=0;i<NB;i++){var t=T0+i*M15;if(Math.floor(t/DAY)!==key)continue;T.push(A.T[i]);RH.push(A.RH[i]);P.push(A.P[i]);WS.push(A.WS[i]);G.push(A.G[i]);WD.push(A.WD[i]);rn+=A.RN[i];ts+=A.TSR[i]*M15;ck+=clearSky(t)*M15;par+=A.PAR[i]*M15*1e-6}
+  for(var k=0;k<NF;k++){var t2=NOW+(k+1)*H;if(Math.floor(t2/DAY)!==key)continue;T.push(F.T[k]);RH.push(F.RH[k]);P.push(F.P[k]);WS.push(F.WS[k]);G.push(F.G[k]);WD.push(F.WD[k]);rn+=F.RN[k];ts+=F.TSR[k]*H;ck+=clearSky(t2)*H;par+=F.PAR[k]*H*1e-6}
+  var ratio=ck?ts/ck:0,cond=rn>=1?'Rain':ratio>.8?'Sunny':ratio>.5?'Partly cloudy':'Cloudy',sx=mean(WD.map(function(a){return S(a*RD)})),cx=mean(WD.map(function(a){return C(a*RD)})),md=((Math.atan2(sx,cx)/RD)+360)%360,pr=rn>=.2?Math.min(95,60+Math.round(12*rn)):Math.round(100*cl(.03+.22*(1-ratio),0,1));
+  out.push({t:key*DAY,T:T,RH:RH,P:P,WS:WS,G:G,md:md,rn:rn,cond:cond,pr:pr,dli:par,ratio:ratio})}
+ return out}
+function dliChart(x0){var A=D.A,F=D.F,d0=Math.floor(x0/DAY),d1=Math.floor((NOW+st.f*DAY)/DAY),m={},k,i,t;
+ for(i=0;i<NB;i++){t=T0+i*M15;k=Math.floor(t/DAY);m[k]=m[k]||[0,0];m[k][0]+=A.PAR[i]*M15*1e-6}
+ for(i=0;i<NF;i++){t=NOW+(i+1)*H;k=Math.floor(t/DAY);m[k]=m[k]||[0,0];m[k][1]+=F.PAR[i]*H*1e-6}
+ var n=d1-d0+1,w=640,h=225,l=34,cw=(w-l-8)/n,mx=0,s;for(k=d0;k<=d1;k++)if(m[k])mx=Math.max(mx,m[k][0]+m[k][1]);mx=Math.ceil(mx/10)*10||10;
+ s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Daily light integral">';for(i=0;i<=4;i++){var y=8+(h-34)*i/4;s+='<line x1="'+l+'" x2="'+(w-8)+'" y1="'+y+'" y2="'+y+'" stroke="var(--bd)"/><text x="'+(l-5)+'" y="'+(y+3)+'" text-anchor="end">'+Math.round(mx*(1-i/4))+'</text>'}
+ for(k=d0;k<=d1;k++){var q=m[k]||[0,0],x=l+(k-d0)*cw+cw*.15,bw=cw*.7,yo=8+(h-34)*(1-q[0]/mx),yf=8+(h-34)*(1-(q[0]+q[1])/mx),dd=new Date(k*DAY);
+  s+='<rect x="'+x+'" y="'+yo+'" width="'+bw+'" height="'+(h-26-yo)+'" fill="var(--or)"><title>'+dd.getUTCDate()+' '+MO[dd.getUTCMonth()]+': '+q[0].toFixed(1)+' mol/m² recorded</title></rect>'+(q[1]>0?'<rect x="'+x+'" y="'+yf+'" width="'+bw+'" height="'+(yo-yf)+'" fill="var(--or)" opacity=".4"><title>'+dd.getUTCDate()+' '+MO[dd.getUTCMonth()]+': '+q[1].toFixed(1)+' mol/m² forecast</title></rect>':'')+'<text x="'+(x+bw/2)+'" y="'+(h-10)+'" text-anchor="middle">'+dd.getUTCDate()+'</text>'}
+ return s+'</svg><div class="lg"><span><i style="--cc:var(--or)"></i>Recorded</span><span><i style="--cc:var(--or);opacity:.4"></i>Forecast</span><span>mol/m² per day</span></div>'}
+function render(){
+ D=data(st.s);var A=D.A,F=D.F,L=NB-1,x0=NOW-st.h*DAY,x1=NOW+st.f*DAY,N=function(k){return A[k][L]};
+ var T=A.T[L],RH=A.RH[L],rate=A.RN[L]*4,hr=sum(A.RN.slice(L-3,L+1)),gust=Math.max.apply(null,A.G.slice(L-3,L+1)),today=Math.floor(NOW/DAY),dli=0,i;
+ for(i=0;i<NB;i++)if(Math.floor((T0+i*M15)/DAY)===today)dli+=A.PAR[i]*M15*1e-6;
+ var cls=rate<=0?'No rain':rate<2.5?'Light':rate<7.6?'Moderate':rate<50?'Heavy':'Violent';
+ var o=function(a){return oS(a)},f=function(a){return fS(a)},fb=function(a,b){return band(a,b)};
+ var tb=fb(F.T,F.bT),rb=fb(F.RH,F.bRH),pb=fb(F.P,F.bP),wb=fb(F.WS,F.bWS),sb=fb(F.TSR,F.bTSR);sb.lo=sb.lo.map(function(v){return Math.max(0,v)});
+ var ob=slice(oS(A.WD),x0,NOW),fd=slice(fS(F.WD),NOW,x1),co=counts(ob),cf=counts(fd),dy=days();
+ var SD=['Temperature','Humidity'];
+ $('ttl').textContent='Weather Station Data (ws_00'+(st.s+1)+')';
+ $('g').innerHTML=
+  '<div class="loc"><b>Latest Recordings</b> – <i>(Current location – Farm F001, sample site)</i></div><div class="last">Last recorded time<b>'+fdt(NOW)+'</b></div>'+
+  pan(3,'ws_00'+(st.s+1)+', Temperature',arcG(T,0,60,5,'#ff7043',T.toFixed(1)+' °C','Temperature'))+pan(3,'ws_00'+(st.s+1)+', Humidity',liquid(RH))+pan(3,'ws_00'+(st.s+1)+', Rain',rainG(rate,hr))+pan(3,'ws_00'+(st.s+1)+', Pressure',dialG(A.P[L],900,1200,100,20,A.P[L].toFixed(2)+' hPa','Pressure'))+
+  pan(3,'Wind speed (km/h)',dialG(A.WS[L],0,50,10,2,A.WS[L].toFixed(1),'Wind speed'))+pan(3,'Wind direction (degrees)',compass(A.WD[L])+dialG(A.WD[L],0,360,60,12,DR[Math.round(A.WD[L]/22.5)%16]+' '+A.WD[L].toFixed(0)+'°','Wind direction'))+
+  pan(2,'PAR (µmol/m²/s)',arcG(A.PAR[L],0,2500,500,'var(--ok)',A.PAR[L].toFixed(0),'PAR micromol'))+pan(2,'PAR (W/m²)',arcG(A.PW[L],0,1200,200,'var(--ok)',A.PW[L].toFixed(0),'PAR watts'))+pan(2,'Total solar radiation (W/m²)',arcG(A.TSR[L],0,1200,200,'var(--ok)',A.TSR[L].toFixed(0),'Total solar radiation'))+
+  stat(2,'Absolute humidity',A.AH[L].toFixed(2),'g/m³','calculated')+stat(2,'Wet-bulb temperature',A.WB[L].toFixed(1),'°C','calculated')+stat(2,'Dew point',A.TD[L].toFixed(1),'°C','calculated')+
+  stat(2,'DLI today so far',dli.toFixed(1),'mol/m²','calculated from PAR')+stat(2,'Rain intensity',rate.toFixed(1),'mm/h',cls+' (calculated)')+stat(2,'Wind gust, last hour',gust.toFixed(1),'km/h','calculated')+
+  sec('7-day forecast')+
+  pan(12,'Next 7 days (Today uses recorded values so far plus the forecast for the rest of the day)','<div class="fcs">'+dy.map(function(d,j){var dd=new Date(d.t),mx=Math.max.apply(null,d.T),mn=Math.min.apply(null,d.T);return'<div class="fcd"><b>'+(j?WK[dd.getUTCDay()]+' '+dd.getUTCDate():'Today')+'</b>'+icon(d.cond)+'<div style="color:var(--tx)">'+d.cond+'</div><div class="tm">'+mx.toFixed(0)+'° <span>/ '+mn.toFixed(0)+'°</span></div><div>Rain '+d.rn.toFixed(1)+' mm, '+d.pr+'%</div><div>Wind '+mean(d.WS).toFixed(0)+' km/h '+DR[Math.round(d.md/22.5)%16]+'</div><div>Gust up to '+Math.max.apply(null,d.G).toFixed(0)+'</div><div>RH '+mean(d.RH).toFixed(0)+'%, '+mean(d.P).toFixed(0)+' hPa</div><div>DLI '+d.dli.toFixed(0)+' mol/m²</div></div>'}).join('')+'</div>')+
+  sec('Temperature')+
+  pan(8,'Temperature (°C)',tsc({t:'Temperature',u:' °C',x0:x0,x1:x1,ser:[{n:'Temperature',c:'#e0425a',ax:'l',o:o(A.T),f:f(F.T),lo:tb.lo,hi:tb.hi},{n:'WBT',c:'#f5a623',ax:'l',o:o(A.WB),f:f(F.WB)},{n:'Dew point',c:'#5b8def',ax:'l',o:o(A.TD),f:f(F.TD)}]}))+
+  pan(4,'Min, max and mean',minmax([['Temperature',A.T,F.T,1,'#e0425a'],['WBT',A.WB,F.WB,1,'#f5a623'],['Dew point',A.TD,F.TD,1,'#5b8def']],x0,x1)+'<div class="sd" style="margin-top:6px">Observed covers the History setting, forecast covers the Forecast setting.</div>')+
+  sec('Humidity')+
+  pan(9,'Humidity (RH%) and absolute humidity (g/m³)',tsc({t:'Humidity',u:' %',rax:'#2f9bd6',x0:x0,x1:x1,zone:[40,80],th:[{v:40,c:'#c9a400',n:'40% lower limit'},{v:80,c:'var(--bad)',n:'80% upper limit'}],ser:[{n:'Humidity',c:'#2f4fb0',ax:'l',o:o(A.RH),f:f(F.RH),lo:rb.lo,hi:rb.hi},{n:'Absolute humidity',c:'#2f9bd6',ax:'r',o:o(A.AH),f:f(F.AH),u:' g/m³',dec:2}]})+minmax([['Humidity (%)',A.RH,F.RH,1,'#2f4fb0'],['Absolute humidity (g/m³)',A.AH,F.AH,2,'#2f9bd6']],x0,x1))+
+  pan(3,'Last humidity in range',liquid(RH,(RH>=40&&RH<=80?'In range':'Out of range')+' (40 to 80%)'))+
+  sec('Rain and pressure')+
+  pan(6,'Rain (mm per hour)',tsc({t:'Rain',u:' mm',x0:x0,x1:x1,bar:1,min0:1,ser:[{n:'Rain per hour',c:'#2aa9d6',ax:'l',type:'bar',o:{t0:NOW-167*H,dt:H,v:rainH(A)},f:f(F.RN)}]}))+
+  pan(6,'Pressure (hPa)',tsc({t:'Pressure',u:' hPa',x0:x0,x1:x1,ser:[{n:'Pressure',c:'#7c5cc4',ax:'l',o:o(A.P),f:f(F.P),lo:pb.lo,hi:pb.hi,dec:2}]}))+
+  sec('Solar radiation and light')+
+  pan(8,'Total solar radiation and PAR (W/m²)',tsc({t:'Solar radiation',u:' W/m²',x0:x0,x1:x1,min0:1,ser:[{n:'Total solar radiation',c:'#e8590c',ax:'l',o:o(A.TSR),f:f(F.TSR),lo:sb.lo,hi:sb.hi,dec:0},{n:'PAR',c:'#2f8a3a',ax:'l',o:o(A.PW),f:f(F.PW),dec:0}]}))+
+  pan(4,'Daily light integral, DLI (mol/m² per day)',dliChart(x0))+
+  sec('Wind direction analysis')+
+  pan(4,'Wind direction distribution, recorded',rose(co)+'<div class="sd">Bar length shows how often the wind came from each direction.</div>')+
+  pan(4,'Wind direction distribution, forecast',rose(cf)+'<div class="sd">Same chart for the forecast period.</div>')+
+  pan(4,'Wind direction frequencies, recorded',pie(co))+
+  sec('Combined graph for wind speed and direction')+
+  pan(12,'Wind speed (km/h) and direction',tsc({t:'Wind speed and direction',u:' km/h',h:250,x0:x0,x1:x1,min0:1,arr:{o:oS(A.WD),f:fS(F.WD),c:'#3a7d44'},ser:[{n:'Wind speed',c:'#1f60c4',ax:'l',o:o(A.WS),f:f(F.WS),lo:wb.lo,hi:wb.hi},{n:'Gust',c:'#e8590c',ax:'l',o:o(A.G),f:f(F.G),w:1.2,dash:'3 3'}]})+'<div class="lg"><span>Arrows point the way the wind blows. They are drawn every 3 hours, and faded for the forecast.</span></div>');
+}
+function rainH(A){var v=[];for(var m=0;m<168;m++){var end=NB-1-4*(167-m);v.push(Math.round(sum(A.RN.slice(Math.max(0,end-3),end+1))*10)/10)}return v}
+$('stn').addEventListener('change',function(e){st.s=+e.target.value;render()});
+$('hs').addEventListener('change',function(e){st.h=+e.target.value;render()});
+$('fh').addEventListener('change',function(e){st.f=+e.target.value;render()});
+var root=document.documentElement;try{var th=localStorage.getItem('theme');if(th)root.setAttribute('data-theme',th)}catch(e){}
+$('tb').addEventListener('click',function(){var c=root.getAttribute('data-theme'),d=c?c==='dark':matchMedia('(prefers-color-scheme: dark)').matches,n=d?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}});
+render();
+})();
+</script>
+</body>
+</html>
