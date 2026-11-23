@@ -28,8 +28,9 @@ h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15
 a{color:inherit}
 button{font:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+.wrap{max-width:1440px;margin:0 auto;padding:0 clamp(20px,4.5vw,72px)}
 .note{background:var(--warn-bg);color:var(--warn);font-size:.85rem;padding:8px 20px;text-align:center}
+.hero-bg{background:radial-gradient(900px 420px at 85% 10%,var(--soft),transparent 70%)}
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
 .bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px;flex-wrap:wrap}
 .logo{font:700 1.1rem "Bricolage Grotesque",sans-serif;text-decoration:none}
@@ -37,35 +38,36 @@ nav{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
 nav a{text-decoration:none;color:var(--muted);font-size:.93rem}
 nav a:hover{color:var(--ink)}
 .theme{background:none;border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:3px 10px;font-size:.85rem}
-.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:32px;align-items:center;padding:56px 0}
-.hero h1{font-size:clamp(2.1rem,6vw,3.4rem);font-weight:700;letter-spacing:-.02em}
-.hero p{color:var(--muted);max-width:52ch;margin:16px 0 22px}
+.hero{display:grid;grid-template-columns:1.25fr .85fr;gap:clamp(32px,5vw,80px);align-items:center;padding:clamp(48px,7vw,104px) 0}
+.hero h1{font-size:clamp(2.2rem,5vw,4.4rem);font-weight:700;letter-spacing:-.02em}
+.hero p{color:var(--muted);max-width:62ch;margin:20px 0 28px;font-size:clamp(1rem,1.2vw,1.18rem)}
 .btns{display:flex;gap:12px;flex-wrap:wrap}
 .btn{display:inline-block;padding:10px 18px;border-radius:10px;text-decoration:none;font-weight:500;border:1px solid var(--line);background:var(--surface)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.profile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.profile{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:clamp(22px,2.6vw,36px);display:flex;flex-direction:column;gap:14px;box-shadow:0 18px 48px rgba(0,0,0,.12)}
 .avatar{width:64px;height:64px;border-radius:50%;background:var(--soft);border:1px solid var(--line);display:grid;place-items:center;font:700 1.3rem "Bricolage Grotesque",sans-serif;color:var(--accent)}
 .profile h3{font-size:1.2rem}
 .muted{color:var(--muted);font-size:.93rem}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;border-top:1px solid var(--line);padding-top:14px}
-.stat b{display:block;font:700 1.5rem "Bricolage Grotesque",sans-serif;color:var(--accent)}
+.stat b{display:block;font:700 clamp(1.5rem,2.3vw,2.2rem) "Bricolage Grotesque",sans-serif;color:var(--accent)}
 .stat span{font-size:.78rem;color:var(--muted);line-height:1.3;display:block}
-section{padding:44px 0}
-h2.t{font-size:1.8rem;margin-bottom:8px}
+section{padding:clamp(44px,6vw,88px) 0}
+main>section+section{border-top:1px solid var(--line)}
+h2.t{font-size:clamp(1.8rem,2.8vw,2.6rem);margin-bottom:8px}
 h2.t::after{content:"";display:block;width:64px;height:3px;border-radius:2px;background:var(--accent);margin-top:10px}
-.sub{color:var(--muted);margin:0 0 22px;max-width:62ch}
-.about{display:grid;grid-template-columns:240px 1fr;gap:40px;align-items:start;margin-top:22px}
-.photo{width:210px;height:210px;border-radius:50%;border:4px solid var(--accent);background:var(--soft);display:grid;place-items:center;font:700 3.2rem "Bricolage Grotesque",sans-serif;color:var(--accent);margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,.15)}
-.about p{margin:0 0 14px;color:var(--muted)}
+.sub{color:var(--muted);margin:0 0 26px;max-width:75ch;font-size:1.05rem}
+.about{display:grid;grid-template-columns:clamp(240px,24vw,340px) 1fr;gap:clamp(32px,5vw,80px);align-items:center;margin-top:28px}
+.photo{width:clamp(210px,20vw,290px);height:clamp(210px,20vw,290px);border-radius:50%;border:4px solid var(--accent);background:var(--soft);display:grid;place-items:center;font:700 3.2rem "Bricolage Grotesque",sans-serif;color:var(--accent);margin:0 auto;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.about p{margin:0 0 16px;color:var(--muted);font-size:clamp(1rem,1.2vw,1.15rem);max-width:90ch}
 .about p b{color:var(--ink);font-weight:500}
-.hl{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:22px}
-.hcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+.hl{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:clamp(16px,2vw,28px);margin-top:28px}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:clamp(20px,2vw,30px)}
 .hcard h3{font-size:1.05rem;color:var(--accent);padding-bottom:10px;border-bottom:1px solid var(--accent);margin-bottom:14px}
 .hcard ul{list-style:none;margin:0;padding:0;display:grid;gap:9px;font-size:.93rem}
 .hcard li{display:flex;gap:10px;align-items:center}
 .hcard li::before{content:"";flex:none;width:0;height:0;border-left:7px solid var(--accent);border-top:4px solid transparent;border-bottom:4px solid transparent}
-.stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:22px}
-.sg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:clamp(16px,2vw,28px);margin-top:28px}
+.sg{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,2vw,28px)}
 .sg header{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line);margin-bottom:12px}
 .ico{width:38px;height:38px;border-radius:10px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;flex:none}
 .ico svg{width:20px;height:20px}
@@ -77,7 +79,7 @@ h2.t::after{content:"";display:block;width:64px;height:3px;border-radius:2px;bac
 .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
 .filters button{background:none;border:1px solid var(--line);color:var(--ink);padding:6px 14px;border-radius:999px;font-size:.9rem}
 .filters button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.projects{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+.projects{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr));gap:clamp(16px,2vw,28px)}
 .proj{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
 .proj[hidden]{display:none}
 .shot{height:96px;background:repeating-linear-gradient(135deg,var(--line) 0 8px,transparent 8px 16px);display:grid;place-items:center;color:var(--muted);font-size:.8rem}
@@ -97,13 +99,13 @@ h2.t::after{content:"";display:block;width:64px;height:3px;border-radius:2px;bac
 .proj summary{cursor:pointer;color:var(--accent);font-weight:500}
 .proj details ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}
 .proj details li{margin-bottom:4px}
-.timeline{display:grid;gap:14px}
-.job{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.timeline{display:grid;grid-template-columns:repeat(auto-fit,minmax(420px,1fr));gap:clamp(16px,2vw,28px)}
+.job{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:clamp(20px,2vw,30px)}
 .job header{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .job h3{font-size:1.08rem}
 .job ul{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:.93rem}
 .job li{margin-bottom:4px}
-.contact{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.contact{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:clamp(28px,4vw,64px);display:grid;grid-template-columns:1.2fr 1fr;gap:clamp(24px,5vw,80px);align-items:center}
 .contact p{margin:0;color:var(--muted)}
 .rows{display:grid;gap:10px;font-size:.95rem}
 .rows span{color:var(--muted);display:block;font-size:.82rem}
@@ -111,7 +113,7 @@ footer{padding:24px 0 36px;color:var(--muted);font-size:.85rem}
 @media (max-width:760px){
   .hero,.about,.contact{grid-template-columns:1fr}
   .hero{padding:32px 0}
-  .projects{grid-template-columns:1fr}
+  .projects,.timeline{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
 body.editing{padding-bottom:120px}
@@ -149,8 +151,7 @@ body.editing .lv{cursor:ew-resize}
   </nav>
 </div></div>
 
-<main class="wrap" id="top">
-  <div class="hero">
+<div class="hero-bg"><div class="wrap" id="top"><div class="hero">
     <div>
       <h1>I turn data into decisions teams can act on.</h1>
       <p>Senior Data Analyst with about 4 years in agricultural data. I build real-time dashboards, monitoring systems and analytical tools, and I lead a team of 7 data professionals.</p>
@@ -169,7 +170,8 @@ body.editing .lv{cursor:ew-resize}
         <div class="stat"><b>88%</b><span>Digitization efficiency gain</span></div>
       </div>
     </aside>
-  </div>
+  </div></div></div>
+<main class="wrap">
 
   <section id="about">
     <h2 class="t">About me</h2>
@@ -178,7 +180,7 @@ body.editing .lv{cursor:ew-resize}
       <div>
         <p>I’m a <b>Senior Data Analyst</b> based in <b>Kota, Rajasthan</b>, working with agricultural data at <b>Eeki Automation</b>. My days are spent with <b>IoT sensor, climate and crop data</b>, turning it into dashboards and tools that farm teams rely on.</p>
         <p>My path began in <b>electrical engineering</b>, working with PLC and SCADA systems, and continued through <b>teaching</b> as an assistant professor. Those years taught me to explain complex ideas simply, and to respect how machines and people work together.</p>
-        <p>Today I lead a team of <b>7 data professionals</b>, write <b>standard procedures</b> for collecting reliable data, and keep building on the side, from a <b>weather forecasting dashboard</b> to a <font color="#e6eef1">crop health monitoring system</font>.</p>
+        <p>Today I lead a team of <b>7 data professionals</b>, write <b>standard procedures</b> for collecting reliable data, and keep building on the side, from a <b>weather forecasting dashboard</b> to a <b>crop health monitoring system</b>.</p>
         <p>To me, data work is only finished when someone uses it to make a better decision.</p>
       </div>
     </div>
@@ -208,7 +210,7 @@ body.editing .lv{cursor:ew-resize}
       <div class="sg"><header><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"></path></svg></span><h3>Tools and platforms</h3></header>
         <div class="sk"><span>Grafana</span><div class="lv"><i style="width:90%"></i></div></div>
         <div class="sk"><span>InfluxDB</span><div class="lv"><i style="width:85%"></i></div></div>
-        <div class="sk"><span>Excel/Goole sheets</span><div class="lv"><i style="width:90%"></i></div></div>
+        <div class="sk"><span>Excel/Google sheets</span><div class="lv"><i style="width:90%"></i></div></div>
         <div class="sk"><span>Power BI</span><div class="lv"><i style="width:70%"></i></div></div>
         <div class="sk"><span>Tableau</span><div class="lv"><i style="width: 70%;"></i></div></div>
         <div class="sk"><span>Google Workspace</span><div class="lv"><i style="width: 90%;"></i></div></div>
@@ -269,10 +271,11 @@ body.editing .lv{cursor:ew-resize}
         <span class="cat">Models and analysis</span><h3>Crop yield prediction</h3>
         <p>Models on climate and crop data to forecast yield trends for production planning.</p>
         <dl><dt>Tools</dt><dd>Python, regression, Gradient Boosting, Random Forest</dd></dl></div></article>
-      <article class="proj" data-c="Models"><div class="shot">Chart (sample data)</div><div class="pbody">
-        <span class="cat">Models and analysis</span><h3>Production and sales optimization</h3>
-        <p>SQL analysis of production and sales, plus an inventory management model.</p>
-        <dl><dt>Tools</dt><dd>SQL</dd><dt>Result</dt><dd>35% less overstock</dd></dl></div></article>
+      <article class="proj" data-c="Models"><div class="shot pv"><svg viewBox="0 0 320 120" aria-hidden="true" style="width:100%;height:100%"><g stroke="var(--line)"><line x1="12" x2="308" y1="30" y2="30"/><line x1="12" x2="308" y1="60" y2="60"/><line x1="12" x2="308" y1="90" y2="90"/></g><path d="M12 84 C50 74 80 62 120 52 S190 30 230 40 S280 56 308 48" fill="none" stroke="#d64545" stroke-width="3" stroke-linecap="round"/><path d="M12 92 C50 88 80 80 120 76 S190 64 230 68 S280 76 308 72" fill="none" stroke="#3cc3e0" stroke-width="3" stroke-linecap="round"/><path d="M12 98 C60 90 90 70 130 62 S200 50 240 56 S290 64 308 58" fill="none" stroke="var(--muted)" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/><g fill="#3cc3e0"><rect x="262" y="12" width="10" height="14" rx="2"/><rect x="276" y="16" width="10" height="10" rx="2"/><rect x="290" y="20" width="10" height="6" rx="2"/></g></svg></div><div class="pbody">
+        <span class="cat">Models and analysis</span><h3>Production and sales optimization</h3><span class="tag">Built with sample data</span>
+        <p>An interactive daily dashboard that tracks demand, production and actual sales for 8 products over 90 days. It flags every shortfall (demand not met) and every over-availability (stock expiring), puts a rupee value on both, ranks what to fix first, and tests a demand-matched production plan against what was actually produced.</p>
+        <dl><dt>At work</dt><dd>SQL analysis of production and sales data and an inventory management model, which reduced overstock by 35%</dd><dt>In this demo</dt><dd>Daily demand, production, sales and stock for each product, KPI cards with fill rate and lost sales, a day-by-day availability map, a weekday pattern, a product scorecard with suggested moves, and a Current against Optimised plan switch with an adjustable stock cover</dd><dt>Tools</dt><dd>HTML, CSS, JavaScript and SVG charts. The optimised plan uses a same-weekday demand forecast and stock-cover targets. Sample data made with a seeded random generator in JavaScript</dd></dl>
+        <div class="plinks"><a href="production-sales-optimization.html">Open live dashboard</a></div></div></article>
       <article class="proj" data-c="Apps"><div class="shot">App screens</div><div class="pbody">
         <span class="cat">Apps and hardware</span><h3>Internal mobile app for data recording</h3>
         <p>Tested, deployed and refined the app used for real-time field data entry.</p>
@@ -306,7 +309,7 @@ body.editing .lv{cursor:ew-resize}
       <div>
         <h2 class="t">Get in touch</h2>
         <p>Interested in working together or want to talk about farm data? Send me a message.</p>
-        <div class="btns" style="margin-top:16px"><a class="btn primary" href="mailto:yasha.sharma99@gmail.com">Send email</a><a class="btn" href="#top">Download resume</a></div>
+        <div class="btns" style="margin-top:16px"><a class="btn primary" href="mailto:yasha.sharma99@gmail.com">Send email</a><a class="btn" href="resume.pdf">Download resume</a></div>
       </div>
       <div class="rows">
         <div><span>Email</span>yasha.sharma99@gmail.com</div>
