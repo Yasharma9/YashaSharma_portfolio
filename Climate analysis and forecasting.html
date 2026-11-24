@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){var t='dark';try{t=localStorage.getItem('theme')||'dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Climate analysis and forecasting (sample data)</title>
@@ -34,10 +35,13 @@ table{width:100%;border-collapse:collapse;font-size:.82rem}th,td{padding:6px 9px
 .sb{display:flex;height:20px;border-radius:2px;overflow:hidden;background:var(--hv)}.sb i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.72rem;color:#fff}
 .nt{margin-top:10px;color:var(--mu);font-size:.8rem;max-width:110ch}
 @media (max-width:760px){.pn{grid-column:1/-1}.pn.st{grid-column:span 6}}
+.back{display:inline-block;margin-top:14px;font-size:.88rem;font-weight:500;text-decoration:none;color:var(--bl)}.back:hover,.back:focus-visible{text-decoration:underline}
+/* theme readability */.sb i{color:#0b0c0e}:root[data-theme="light"]{--wa:#7d5c00;--ok:#23722d;--mu:#5a5d67}:root[data-theme="light"] .sb i{color:#fff}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <a class="back" href="index.html">← Back to portfolio</a>
   <div class="bar">
     <h1>Climate analysis and forecasting</h1><span class="tag">Sample data</span>
     <div class="vr"><span>Farm</span><select id="fm" aria-label="Farm"><option>F001</option></select></div>

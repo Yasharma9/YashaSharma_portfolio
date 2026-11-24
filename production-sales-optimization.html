@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en"><head>
+<script>(function(){var t='dark';try{t=localStorage.getItem('theme')||'dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Production and sales optimization dashboard – Yasha Sharma</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#f2f6f7;--surface:#fff;--ink:#16232a;--muted:#55666e;--line:#d3dde1;--accent:#00789a;--ai:#fff;--soft:#dcecf1;--bad:#c0392b;--ok:#2e8b57;--warn:#c27c0e;--prod:#d98a1d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--ai:#07202a;--soft:#1c3640;--bad:#ef6f61;--ok:#5cc88a;--warn:#e2c46e;--prod:#f0a93f}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--ai:#07202a;--soft:#1c3640;--bad:#ef6f61;--ok:#5cc88a;--warn:#e2c46e;--prod:#f0a93f}}
+:root[data-theme="dark"]{--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--ai:#07202a;--soft:#1c3640;--bad:#ef6f61;--ok:#5cc88a;--warn:#e2c46e;--prod:#f0a93f}
 *,*::before,*::after{box-sizing:border-box}
 html,body{background:var(--bg)}
 body{margin:0;color:var(--ink);font:400 15px/1.55 "Instrument Sans",system-ui,sans-serif}
@@ -39,8 +41,10 @@ tr[data-i]{cursor:pointer}tr[data-i]:hover,tr.on{background:var(--bg)}
 .chip{padding:1px 9px;border-radius:999px;font-size:.76rem;border:1px solid currentColor}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
 footer{padding:24px 0 40px;color:var(--muted);font-size:.84rem}
 @media(max-width:980px){.g1,.g2{grid-template-columns:1fr}.ctl{position:static}}
+.theme{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:4px 11px;font:inherit;font-size:.85rem;cursor:pointer}
+/* theme readability */:root[data-theme="light"]{--warn:#94600a;--ok:#23724a}:root[data-theme="light"] .tag{color:#005f7a}
 </style></head><body>
-<header class="top"><div class="wrap"><a href="./">← Back to portfolio</a><span class="tag">Built with sample data</span></div></header>
+<header class="top"><div class="wrap"><a href="index.html">← Back to portfolio</a><span style="display:flex;gap:10px;align-items:center"><span class="tag">Built with sample data</span><button class="theme" id="thm" type="button" aria-label="Switch light or dark theme">Theme</button></span></div></header>
 <main class="wrap">
 <section class="intro"><h1>Production and sales optimization dashboard</h1>
 <p>Daily tracking of demand, production and actual sales for 8 polyhouse products over 90 days. The dashboard flags every shortfall (demand not met) and every over-availability (stock piling up or expiring), turns them into rupee impact, and tests a demand-matched production plan against what was actually produced.</p></section>
@@ -147,4 +151,5 @@ seg('rg',function(b){RANGE=+b.dataset.r;render()});seg('md',function(b){MODE=+b.
 document.addEventListener('click',function(e){var el=e.target.closest('[data-i]');if(el)pick(+el.dataset.i==sel?-1:+el.dataset.i)});
 render();
 })();
-</script></body></html>
+</script><script>document.getElementById('thm').addEventListener('click',function(){var r=document.documentElement,n=r.getAttribute('data-theme')==='light'?'dark':'light';r.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}});</script>
+</body></html>

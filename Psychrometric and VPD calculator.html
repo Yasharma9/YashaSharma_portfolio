@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>(function(){var t='dark';try{t=localStorage.getItem('theme')||'dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Psychrometric and VPD calculator</title>
@@ -43,10 +44,13 @@ td.cur{outline:2px solid var(--ink);outline-offset:0;font-weight:700}
 details{margin-top:12px;font-size:.88rem}summary{cursor:pointer;color:var(--accent);font-weight:500}details ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}details li{margin-bottom:4px}
 .nt{margin-top:12px;color:var(--muted);font-size:.84rem;max-width:90ch}
 @media (max-width:820px){.grid{grid-template-columns:1fr}}
+.back{display:inline-block;margin-top:14px;font-size:.88rem;font-weight:500;text-decoration:none;color:var(--accent)}.back:hover,.back:focus-visible{text-decoration:underline}
+/* theme readability */:root[data-theme="light"] .c-z4{color:#7d5c00}:root[data-theme="dark"]{--z3:rgba(76,204,133,.32);--z4:rgba(242,204,12,.28)}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <a class="back" href="index.html">← Back to portfolio</a>
   <div class="top">
     <div>
       <h1>Psychrometric and VPD calculator</h1>
