@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Data health board (sample data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f7;--surface:#fff;--ink:#16232a;--muted:#55666e;--line:#d3dde1;--accent:#00789a;--accent-ink:#fff;--soft:#dcecf1;--ok:#2e9e5b;--wa:#a67c00;--bad:#d64545;--okb:rgba(46,158,91,.2);--wab:rgba(230,170,40,.32);--badb:rgba(214,69,69,.26);--na:rgba(130,145,155,.14);--warn:#8a6a1f;--warn-bg:#f3ead1;--gr:#8a95a0;--sec:#16232a;--sec-ink:#e4ef55;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--accent-ink:#07202a;--soft:#1c3640;--ok:#4ccc85;--wa:#f2cc0c;--bad:#ff6b6b;--okb:rgba(76,204,133,.22);--wab:rgba(242,204,12,.26);--badb:rgba(255,107,107,.3);--na:rgba(143,160,171,.12);--warn:#e2c46e;--warn-bg:#2e2916;--gr:#8fa0ab;--sec:#05090b;--sec-ink:#e4ef55}}
+:root[data-theme="dark"]{--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--accent-ink:#07202a;--soft:#1c3640;--ok:#4ccc85;--wa:#f2cc0c;--bad:#ff6b6b;--okb:rgba(76,204,133,.22);--wab:rgba(242,204,12,.26);--badb:rgba(255,107,107,.3);--na:rgba(143,160,171,.12);--warn:#e2c46e;--warn-bg:#2e2916;--gr:#8fa0ab;--sec:#05090b;--sec-ink:#e4ef55}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.5 "Instrument Sans",system-ui,sans-serif}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+button,input,select{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 14px 36px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;padding:16px 0 8px}
+h1{font-size:clamp(1.4rem,4vw,2rem)}.tag{display:inline-block;font-size:.72rem;border-radius:999px;padding:1px 10px;background:var(--warn-bg);color:var(--warn);margin-left:8px;vertical-align:middle}
+.sub{color:var(--muted);margin:4px 0 0;max-width:80ch;font-size:.88rem}
+.theme{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 11px;font-size:.85rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:10px}
+.panel h2{font-size:1.02rem;margin-bottom:4px}.note{color:var(--muted);font-size:.82rem;margin:0 0 6px}
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.tiles div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 10px}.tiles span{display:block;font-size:.72rem;color:var(--muted)}.tiles b{font:700 1.35rem "Bricolage Grotesque",sans-serif}.tiles u{text-decoration:none;font-size:.72rem;color:var(--muted);display:block}
+.cok{color:var(--ok)}.cwa{color:var(--wa)}.cbad{color:var(--bad)}
+details{font-size:.85rem;margin-top:8px}summary{cursor:pointer;color:var(--accent);font-weight:500}
+.set{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:8px}.set label{display:block;font-size:.78rem;font-weight:500;margin-bottom:2px}.set input{width:80px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.tab{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:.84rem}.tab[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tab b{display:inline-block;min-width:18px;margin-left:5px;padding:0 5px;border-radius:999px;background:var(--badb);color:var(--ink);font-size:.74rem;text-align:center}.tab[aria-pressed="true"] b{background:rgba(255,255,255,.28);color:inherit}
+.main{display:grid;grid-template-columns:1.25fr 1fr;gap:10px;align-items:start}
+.hm{display:grid;grid-template-columns:30px repeat(var(--nc),minmax(26px,1fr));gap:2px;font-size:.72rem;min-width:360px}
+.hm .g{background:var(--sec);color:var(--sec-ink);text-align:center;border-radius:3px;padding:1px 2px;font-size:.7rem;line-height:1.2;overflow:hidden}
+.hm .h{color:var(--muted);text-align:center;line-height:1.1;font-size:.66rem;padding:2px 0}.hm .r{color:var(--muted);align-self:center;text-align:right;padding-right:3px}
+.hc{border:2px solid transparent;border-radius:5px;padding:2px 0;font-weight:600;font-size:.74rem}.hc[disabled]{cursor:default;background:var(--na);border:0;color:var(--muted);font-weight:400}
+.s0{background:var(--okb);color:var(--ok)}.s1{background:var(--wab);color:var(--wa)}.s2{background:var(--badb);color:var(--bad)}.hc.sel{border-color:var(--ink)}
+.lg{display:flex;gap:12px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);margin-top:6px}.lg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:middle;background:var(--cc)}
+.fl{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px;font-size:.82rem}.seg button{background:var(--surface);border:1px solid var(--line);padding:3px 10px;font-size:.8rem}.seg button:first-child{border-radius:8px 0 0 8px}.seg button:last-child{border-radius:0 8px 8px 0}.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.todo{max-height:520px;overflow:auto;display:grid;gap:6px;padding-right:2px}
+.it{display:grid;grid-template-columns:8px 1fr;gap:8px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}.it.sel{border-color:var(--accent);background:var(--soft)}
+.it i{border-radius:4px;background:var(--wa)}.it.c i{background:var(--bad)}.it b{font-size:.84rem}.it span{display:block;font-size:.8rem}.it .m{color:var(--muted);font-size:.74rem}
+.chip{display:inline-block;border-radius:999px;padding:0 8px;font-size:.7rem;border:1px solid var(--muted);color:var(--muted);margin-left:4px}
+.fd{background:var(--soft);border-radius:8px;padding:7px 10px;font-size:.86rem;margin-bottom:6px}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--muted);font-size:11px;font-family:inherit}
+table{border-collapse:collapse;width:100%;font-size:.8rem}th,td{padding:5px 8px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:500}
+.nt{margin-top:10px;color:var(--muted);font-size:.8rem;max-width:110ch}
+@media (max-width:900px){.main{grid-template-columns:1fr}.tiles{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Data health board<span class="tag">Sample data</span></h1>
+      <p class="sub">Automatic checks on every sensor feed and every crop record entered by hand, for 20 polyhouses. Find the red and amber cells, read the to-do list, and fix what is wrong. Healthy data needs no review.</p>
+    </div>
+    <button class="theme" id="tb" type="button" aria-label="Switch light or dark theme">Theme</button>
+  </div>
+  <section class="panel">
+    <div class="tiles" id="tiles"></div>
+    <details><summary>Settings and what the checks do</summary>
+      <div class="set"><div><label for="po">Sensor offline after (minutes)</label><input id="po" type="number" min="15" step="15" value="45"></div><div><label for="pf">Sensor stuck for (hours)</label><input id="pf" type="number" min="1" step="0.5" value="2"></div><div><label for="pm">Minutes to check one parameter by hand</label><input id="pm" type="number" min="0.5" step="0.5" value="1"></div></div>
+      <table style="margin-top:8px"><thead><tr><th>Check</th><th>Sensors (every 15 minutes)</th><th>Records entered by hand (daily or weekly)</th></tr></thead><tbody id="rules"></tbody></table>
+    </details>
+  </section>
+  <div class="tabs" id="tabs" role="group" aria-label="Data sections"></div>
+  <div class="main">
+    <section class="panel"><h2>Health map</h2><p class="note">Rows are polyhouses, columns are parameters. The number is how many checks failed. Click a cell to see its data.</p><div style="overflow-x:auto"><div class="hm" id="hm"></div></div>
+      <div class="lg"><span><i style="--cc:var(--okb)"></i>Healthy</span><span><i style="--cc:var(--wab)"></i>Warning</span><span><i style="--cc:var(--badb)"></i>Critical</span><span><i style="--cc:var(--na)"></i>Not expected (crop finished or not started)</span></div></section>
+    <section class="panel"><h2>To do</h2>
+      <div class="fl"><span class="seg" id="sv"><button type="button" data-s="all" aria-pressed="true">All</button><button type="button" data-s="2" aria-pressed="false">Critical</button><button type="button" data-s="1" aria-pressed="false">Warning</button></span><span class="seg" id="ow"><button type="button" data-o="all" aria-pressed="true">Everyone</button><button type="button" data-o="op" aria-pressed="false">Data operator</button><button type="button" data-o="mt" aria-pressed="false">Maintenance</button></span><span id="cnt" style="color:var(--muted)"></span></div>
+      <div class="todo" id="todo"></div></section>
+  </div>
+  <section class="panel"><h2 id="dt">Data</h2><div id="df"></div></section>
+  <p class="nt">All values are randomly generated for this demo, with faults added on purpose: sensors that went quiet or got stuck, entries that are missing, repeated, mistyped or out of line, and slow drift. The checks run on that data in your browser, so changing a setting changes the results. Crop records follow the same crop curves as the farm KPI dashboard. Time saved assumes the minutes per parameter entered in the settings.</p>
+</div>
+<script>
+(function(){
+var NOW=Date.UTC(2026,10,21,13,30),DAY=864e5,STEP=15,S=Math.sin,TP=Math.PI*2,$=function(i){return document.getElementById(i)};
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var R=rng(2026),n=function(){return R()*2-1},sum=function(a){return a.reduce(function(x,y){return x+y},0)},mean=function(a){return a.length?sum(a)/a.length:0},p2=function(v){return(v<10?'0':'')+v},MO='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' '),WD='Sun Mon Tue Wed Thu Fri Sat'.split(' ');
+var SEC=[{k:'clim',n:'Climate sensors'},{k:'irr',n:'Irrigation and nutrition sensors'},{k:'veg',n:'Vegetative growth'},{k:'rep',n:'Reproductive growth'},{k:'hl',n:'Plant health'},{k:'prod',n:'Production and quality'},{k:'man',n:'Manpower'}];
+var TY=[
+{k:'T1',sh:'Air T north',n:'Air temperature, north',sec:'clim',cad:'s',u:'°C',d:1,lo:-5,hi:55,sp:4,dr:2},
+{k:'T2',sh:'Air T south',n:'Air temperature, south',sec:'clim',cad:'s',u:'°C',d:1,lo:-5,hi:55,sp:4,dr:2},
+{k:'PAR',sh:'Light',n:'Light (PAR)',sec:'clim',cad:'s',u:'W/m²',d:0,lo:0,hi:1500,sp:450,dr:100},
+{k:'SM',sh:'Soil moist.',n:'Soil moisture',sec:'irr',cad:'s',u:'%',d:1,lo:0,hi:100,sp:12,dr:8},
+{k:'IR',sh:'Irrig. EC',n:'Irrigation EC',sec:'irr',cad:'s',u:'mS/cm',d:2,lo:0,hi:10,sp:1,dr:.35},
+{k:'DR',sh:'Drain EC',n:'Drain EC',sec:'irr',cad:'s',u:'mS/cm',d:2,lo:0,hi:10,sp:1,dr:.4},
+{k:'H',sh:'Height',n:'Plant height',sec:'veg',cad:'w',u:'cm',d:0,lo:5,hi:600,sp:45,mono:3,flat:3,tol:.25},
+{k:'ND',sh:'Nodes',n:'Nodes per plant',sec:'veg',cad:'w',u:'',d:1,lo:3,hi:90,sp:6,mono:.5,flat:3,tol:.25},
+{k:'FL',sh:'Flowers',n:'Flowers per cluster',sec:'rep',cad:'w',u:'',d:1,lo:0,hi:25,sp:6,tol:.4},
+{k:'FR',sh:'Fruits',n:'Fruits per cluster',sec:'rep',cad:'w',u:'',d:1,lo:0,hi:25,sp:6,tol:.4},
+{k:'HC',sh:'Harv. clusters',n:'Harvested clusters per plant',sec:'rep',cad:'w',u:'',d:1,lo:0,hi:40,sp:3,mono:.2,flat:3,tol:.35},
+{k:'PE',sh:'Pest',n:'Pest incidence',sec:'hl',cad:'w',u:'%',d:1,lo:0,hi:100,sp:8},
+{k:'DI',sh:'Disease',n:'Disease incidence',sec:'hl',cad:'w',u:'%',d:1,lo:0,hi:100,sp:8},
+{k:'RM',sh:'Plants removed',n:'Plants removed',sec:'hl',cad:'w',u:'plants',d:0,lo:0,hi:500,sp:45},
+{k:'HV',sh:'Daily harvest',n:'Daily harvest',sec:'prod',cad:'d',u:'kg',d:0,lo:0,hi:4000,spr:.6,flat:3,tol:.45},
+{k:'FW',sh:'Fruit weight',n:'Average fruit weight',sec:'prod',cad:'w',u:'g',d:0,lo:5,hi:400,spr:.3,tol:.25},
+{k:'WK',sh:'Workers',n:'Workers present',sec:'man',cad:'d',u:'',d:0,lo:0,hi:40,sp:8},
+{k:'WC',sh:'Work done',n:'Work completed',sec:'man',cad:'d',u:'%',d:0,lo:0,hi:100,sp:25}];
+var NN={s:96,w:12,d:14};
+var CR={'TO-0001':{den:2.6,hs:10,pk:.62,hg:12.5,nd:1.4,fpc:5.2,fw:105,hc:.5},'TO-0002':{den:2.6,hs:9,pk:.5,hg:12,nd:1.4,fpc:13,fw:18,hc:.45},'GC-0001':{den:3,hs:10,pk:.26,hg:6.5,nd:1,fpc:1.6,fw:185,hc:.4},'RC-0001':{den:3,hs:13,pk:.24,hg:6,nd:1,fpc:1.5,fw:200,hc:.35}};
+var CROPS='TO-0001,TO-0001,TO-0001,TO-0001,TO-0001,TO-0001,TO-0001,TO-0001,TO-0002,TO-0002,TO-0002,GC-0001,GC-0001,GC-0001,GC-0001,GC-0001,RC-0001,RC-0001,RC-0001,RC-0001'.split(','),DONE={D:1,I:1,M:1,R:1},ID='ABCDEFGHIJKLMNOPQRST'.split('');
+function ex(k,c,age){var hv=age>=c.hs,y=hv?c.pk*Math.min(1,(age-c.hs+1)/7)*(1-.02*Math.max(0,age-22)):0,i,a;
+ switch(k){case'H':a=18;for(i=1;i<=Math.floor(age);i++)a+=c.hg*1.04*(1-.012*Math.max(0,i-24));return a;case'ND':return 6+c.nd*age;case'FL':return age<4?0:1.15*c.fpc*(1-.006*Math.max(0,age-20));case'FR':return age<4?0:c.fpc*(1-.006*Math.max(0,age-20));
+ case'HC':return hv?c.hc*(age-c.hs+1):0;case'FW':return c.fw;case'HV':return y*c.den*4000/7;}return null}
+var PH=ID.map(function(id,i){return{id:id,i:i,c:CR[CROPS[i]],run:!DONE[id],age:DONE[id]?30:6+Math.floor(R()*23)}});
+var U=[],G=PH.map(function(){return TY.map(function(){return null})}),PEER={};
+var hrs=[];for(var i=0;i<96;i++){hrs.push(((NOW-(95-i)*STEP*6e4)%DAY)/36e5)}
+PH.forEach(function(p){var off=n(),ti,k;TY.forEach(function(ty,ti){var v=[],from=0,ok=true,cloud=0,j=ty.k;
+ if(ty.cad==='s'){for(k=0;k<96;k++){var h=hrs[k],x;cloud=.9*cloud+.1*n();
+   if(j==='T1'||j==='T2')x=19+6*S(TP*(h-9)/24)+off+(j==='T2'?.5:0)+n()*.1;
+   else if(j==='SM'){var b=0;[8,12,16].forEach(function(e){var dh=h-e;if(dh>=0&&dh<4)b+=4*Math.exp(-dh/1.2)});x=47+off*1.5+b+n()*.12}
+   else if(j==='IR')x=2.8+.03*S(TP*h/24)+n()*.015;else if(j==='DR')x=3.5+.08*S(TP*h/24)+n()*.02;
+   else x=h>=6.5&&h<=17.5?Math.max(0,650*S(Math.PI*(h-6.5)/11)*(.75+.25*cloud)+n()*6):0;v.push(+x.toFixed(ty.d))}}
+ else{ if(!p.run)return;var nn=NN[ty.cad],a=p.age,c=p.c,rel={H:.03,ND:.02,FL:.04,FR:.04,HC:.03,FW:.04,HV:.06},first=-1;
+  for(k=0;k<nn;k++){var age=ty.cad==='w'?a-(nn-1-k):a-(nn-1-k)/7,x2=null;
+   if(ty.cad==='w'){if(age<1){v.push(null);continue}
+    if(ex(j,c,age)!==null&&'H ND FL FR HC FW'.indexOf(j)>=0){if((j==='FL'||j==='FR')&&age<4||(j==='HC'||j==='FW')&&age<c.hs){v.push(null);continue}x2=ex(j,c,age)*(1+n()*rel[j])}
+    else if(j==='PE')x2=Math.max(0,2.5+n()*.7);else if(j==='DI')x2=Math.max(0,1.5+n()*.5);else if(j==='RM')x2=Math.max(0,4*c.den*1.4*(1+n()*.4))}
+   else{if(j==='HV'){if(age<c.hs){v.push(null);continue}x2=ex('HV',c,age)*(1+n()*.06)}else if(j==='WK')x2=7+n()*.8;else x2=Math.min(100,92+n()*3)}
+   v.push(+x2.toFixed(ty.d));if(first<0)first=k}
+  if(first<0)return;from=first}
+ var u={id:p.id+'-'+ty.k,pi:p.i,ti:ti,ty:ty,v:v,from:from,n:v.length,a:p.age,c:p.c};U.push(u);G[p.i][ti]=u})});
+TY.forEach(function(ty,tj){if(ty.cad!=='s')return;var o=[];for(var q=0;q<96;q++){var a=[];U.forEach(function(u){if(u.ti===tj&&u.v[q]!=null)a.push(u.v[q])});a.sort(function(x,y){return x-y});o.push(a.length?a[Math.floor(a.length/2)]:null)}PEER[tj]=o});
+var used=[];function pick(list,c){var a=[],t=0;while(a.length<c&&t++<500){var q=list[Math.floor(R()*list.length)];if(used.indexOf(q)<0&&a.indexOf(q)<0)a.push(q)}a.forEach(function(q){used.push(q)});return a}
+var SEN=U.filter(function(u){return u.ty.cad==='s'}),MAN=U.filter(function(u){return u.ty.cad!=='s'}),ofk=function(ks){return MAN.filter(function(u){return ks.indexOf(u.ty.k)>=0&&u.n-u.from>=5})};
+pick(SEN,6).forEach(function(u,z){for(var k=96-[4,8,13,24,40,64][z];k<96;k++)u.v[k]=null});
+pick(SEN,4).forEach(function(u,z){var a=20+z*14;for(var k=a;k<a+4+z;k++)u.v[k]=null});
+pick(SEN.filter(function(u){return u.ty.k!=='PAR'}),4).forEach(function(u,z){var len=[9,12,18,24][z],val=u.v[96-len];for(var k=96-len;k<96;k++)u.v[k]=val});
+pick(SEN,3).forEach(function(u,z){var ty=u.ty;u.v[70+z*3]=+[ty.hi*1.6+20,ty.lo-45,ty.hi*3][z].toFixed(ty.d)});
+pick(SEN,4).forEach(function(u,z){var ty=u.ty;u.v[50+z*7]=+(u.v[50+z*7]+ty.sp*(1.6+z*.1)).toFixed(ty.d)});
+pick(SEN,4).forEach(function(u,z){var ty=u.ty;for(var k=60;k<96;k++)if(u.v[k]!=null)u.v[k]=+(u.v[k]+ty.dr*2.2*(k-60)/35).toFixed(ty.d)});
+pick(MAN,8).forEach(function(u,z){var m=z<5?1:2;for(var k=u.n-m;k<u.n;k++)u.v[k]=null});
+pick(ofk(['H','ND','FR','HV','FW','PE','HC']),3).forEach(function(u){u.v[u.n-4]=null});
+pick(ofk(['H','ND','HV','HC']),4).forEach(function(u){var val=u.v[u.n-3];for(var k=u.n-3;k<u.n;k++)u.v[k]=val});
+pick(ofk(['H','FR','HV']),3).forEach(function(u){u.v[u.n-1]=+(u.v[u.n-1]*10).toFixed(u.ty.d)});
+pick(ofk(['H','HC','ND']),3).forEach(function(u,z){u.v[u.n-1]=+(u.v[u.n-2]+({H:-35,HC:-1.5,ND:-4})[u.ty.k]).toFixed(u.ty.d)});
+pick(ofk(['FR','FW','FL','HV']),4).forEach(function(u){for(var k=u.n-3;k<u.n;k++)if(u.v[k]!=null)u.v[k]=+(u.v[k]*.5).toFixed(u.ty.d)});
+var P={off:45,fl:2,mp:1};
+function ts(i){var t=NOW-(95-i)*STEP*6e4,d=new Date(t);return(Math.floor(t/DAY)===Math.floor(NOW/DAY)?'Today ':'Yesterday ')+p2(d.getUTCHours())+':'+p2(d.getUTCMinutes())}
+function lab(u,i){if(u.ty.cad==='s')return ts(i);var t=u.ty.cad==='w'?Date.UTC(2026,10,16)-(11-i)*7*DAY:Date.UTC(2026,10,20)-(13-i)*DAY,d=new Date(t);return u.ty.cad==='w'?'Week of '+d.getUTCDate()+' '+MO[d.getUTCMonth()]:WD[d.getUTCDay()]+' '+d.getUTCDate()+' '+MO[d.getUTCMonth()]}
+function dur(m){var h=Math.floor(m/60),mm=Math.round(m%60);return h?h+' h'+(mm?' '+mm+' min':''):mm+' min'}
+function expArr(u){var ty=u.ty;if(!ty.tol)return null;var a=[];for(var k=0;k<u.n;k++){var age=ty.cad==='w'?u.a-(u.n-1-k):u.a-(u.n-1-k)/7;a.push(age<1?null:ex(ty.k,u.c,age))}return a}
+function chk(u){
+ var ty=u.ty,v=u.v,nn=u.n,f=u.from,sen=ty.cad==='s',o=[],last=-1,i,per=ty.cad==='w'?'week':'day',
+ fmt=function(x){return(+x).toFixed(ty.d)},un=ty.u?' '+ty.u:'';
+ for(i=nn-1;i>=f;i--)if(v[i]!=null){last=i;break}
+ var m=nn-1-last;
+ if(sen){var age=last<0?nn*STEP:m*STEP;if(age>=P.off)o.push({c:'miss',s:age>=120?2:1,m:last<0?'No readings in 24 h':'No data for '+dur(age),at:last<0?'24 h ago':ts(last),sp:[[last+1,nn-1]],pt:[],a:'Check power, network and the logger',w:'mt'})}
+ else if(m>=1)o.push({c:'miss',s:m>=2||last<f?2:1,m:last<f?'No entries yet':m===1?(per==='week'?'This week’s entry is not in yet':'Yesterday’s entry is missing'):'No entry for the last '+m+' '+per+'s',at:lab(u,last<f?f:last+1),sp:[[Math.max(f,last+1),nn-1]],pt:[],a:'Ask the data operator to enter the value',w:'op'});
+ var gaps=[],a0=-1,gmin=sen?3:1;for(i=f;i<=last;i++){if(v[i]==null){if(a0<0)a0=i}else if(a0>=0){if(i-a0>=gmin)gaps.push([a0,i-1]);a0=-1}}
+ if(gaps.length){var lg=Math.max.apply(null,gaps.map(function(g){return g[1]-g[0]+1}));o.push({c:'gap',s:1,m:sen?gaps.length+(gaps.length>1?' gaps':' gap')+', longest '+dur(lg*STEP):'Skipped '+sum(gaps.map(function(g){return g[1]-g[0]+1}))+' '+per+(sum(gaps.map(function(g){return g[1]-g[0]+1}))>1?'s':'')+' in the middle of the series',at:lab(u,gaps[0][0]),sp:gaps,pt:[],a:sen?'Check signal strength and the logger buffer':'Fill in the skipped entries',w:sen?'mt':'op'})}
+ if(last>=f){var L=1;while(last-L>=f&&v[last-L]!=null&&v[last-L]===v[last])L++;
+  if(sen?(L*STEP>=P.fl*60&&!(ty.k==='PAR'&&v[last]<5)):(ty.flat&&L>=ty.flat))o.push({c:'flat',s:sen&&L*STEP>=240?2:1,m:sen?'Same value ('+v[last]+' '+ty.u+') for '+dur(L*STEP):'Same value ('+fmt(v[last])+') entered '+L+' times in a row',at:lab(u,last-L+1),sp:[[last-L+1,last]],pt:[],a:sen?'Inspect the sensor and cable, replace if stuck':'Check it was measured and not copied',w:sen?'mt':'op'})}
+ var bad=[];for(i=f;i<nn;i++)if(v[i]!=null&&(v[i]<ty.lo||v[i]>ty.hi))bad.push(i);
+ if(bad.length){var ex2=Math.max.apply(null,bad.map(function(q){return Math.abs(v[q])}));o.push({c:'range',s:2,m:sen?bad.length+(bad.length>1?' readings':' reading')+' outside '+ty.lo+' to '+ty.hi+' '+ty.u+' (up to '+ex2+')':'Value '+fmt(v[bad[bad.length-1]])+un+' is not possible (limit '+ty.hi+'). Look for a typing error',at:lab(u,bad[0]),sp:[],pt:bad,a:sen?'Check wiring and calibration, discard the bad readings':'Correct the entry (check the units and decimal point)',w:sen?'mt':'op'})}
+ var sp=[],dn=[],prev=-1;for(i=f;i<nn;i++){if(v[i]==null){prev=-1;continue}
+  if(prev>=0&&v[prev]>=ty.lo&&v[prev]<=ty.hi&&v[i]>=ty.lo&&v[i]<=ty.hi){var df=v[i]-v[prev],th=ty.spr?ty.spr*Math.max(Math.abs(v[prev]),1):ty.sp;if(!sen&&ty.mono!=null&&df<-ty.mono)dn.push(i);else if(Math.abs(df)>th)sp.push(i)}prev=i}
+ if(dn.length)o.push({c:'spike',s:2,m:'Went down by '+fmt(v[dn[0]-1]-v[dn[0]])+un+' (was '+fmt(v[dn[0]-1])+', now '+fmt(v[dn[0]])+'). This value should only grow',at:lab(u,dn[0]),sp:[],pt:dn,a:'Check the entry for a typing error',w:'op'});
+ else if(sp.length)o.push({c:'spike',s:1,m:sen?sp.length+(sp.length>1?' jumps':' jump')+', biggest '+Math.max.apply(null,sp.map(function(q){return Math.abs(v[q]-v[q-1])})).toFixed(ty.d)+' '+ty.u+' in 15 min':'Changed by '+(v[sp[0]]-v[sp[0]-1]>0?'+':'−')+fmt(Math.abs(v[sp[0]]-v[sp[0]-1]))+un+' since the last entry, far more than normal',at:lab(u,sp[0]),sp:[],pt:sp,a:sen?'Check for interference or a loose connection':'Check the entry and the unit',w:sen?'mt':'op'});
+ if(sen){var pe=PEER[u.ti],rec=[],bas=[];for(i=0;i<nn;i++){if(v[i]==null||pe[i]==null||v[i]<ty.lo||v[i]>ty.hi)continue;(i>=nn-24?rec:bas).push(v[i]-pe[i])}
+  if(rec.length>=12&&bas.length>=24){var dl=mean(rec)-mean(bas);if(Math.abs(dl)>ty.dr)o.push({c:'drift',s:Math.abs(dl)>2*ty.dr?2:1,m:'Reads '+Math.abs(dl).toFixed(ty.d)+' '+ty.u+' '+(dl>0?'above':'below')+' similar sensors, and the gap has grown over the last 6 h',at:ts(nn-24),sp:[[nn-24,nn-1]],pt:[],a:'Compare with a reference sensor and recalibrate',w:'mt'})}}
+ else if(ty.tol){var ea=expArr(u),offs=[];for(i=Math.max(f,nn-3);i<nn;i++){if(v[i]==null||!ea[i]||ea[i]<=0)continue;offs.push([i,(v[i]-ea[i])/ea[i]])}
+  if(offs.length>=2&&offs.every(function(q){return Math.abs(q[1])>ty.tol&&q[1]*offs[0][1]>0})){var lo2=offs[offs.length-1],rel=Math.abs(lo2[1]);o.push({c:'drift',s:rel>2*ty.tol?2:1,m:'Last entry '+fmt(v[lo2[0]])+' is '+Math.round(rel*100)+'% '+(lo2[1]<0?'below':'above')+' the usual for this crop age (about '+fmt(ea[lo2[0]])+')',at:lab(u,offs[0][0]),sp:[[offs[0][0],nn-1]],pt:[],a:'Check it was entered for the right polyhouse and crop',w:'op'})}}
+ return o}
+var CH={miss:'Missing or offline',gap:'Skipped entries',flat:'Same value repeated',range:'Impossible value',spike:'Sudden jump or drop',drift:'Off from expected or similar'};
+var RULES=[['miss','Missing or offline','No reading for longer than the offline limit.','The latest daily or weekly entry has not been entered.'],['gap','Skipped entries','Three or more readings missing in a row.','A day or week skipped in the middle of the series.'],['flat','Same value repeated','The exact same value for longer than the stuck limit. Light at night is skipped.','The same value entered three times in a row, so it may have been copied.'],['range','Impossible value','A reading outside what the sensor can show.','A value no crop could have, such as a typing error.'],['spike','Sudden jump or drop','A change between readings far bigger than normal.','A jump far above normal, or a drop in a value that should only grow, such as height.'],['drift','Off from expected or similar','Reads higher or lower than the same sensor type in other polyhouses, and the gap has grown.','Well above or below the usual for this crop and age, for two entries in a row.']];
+var st={sel:0,sec:'all',sv:'all',ow:'all'},SEVN=['Healthy','Warning','Critical'],SEVC=['cok','cwa','cbad'];
+function runAll(){U.forEach(function(u){u.is=chk(u);u.s=u.is.length?Math.max.apply(null,u.is.map(function(x){return x.s})):0})}
+function line(u){var nn=u.n,w=640,h=225,l=46,rr=10,t0=10,b=24,sen=u.ty.cad==='s',pe=sen?PEER[u.ti]:expArr(u),vs=[];u.v.forEach(function(q,i){if(q!=null&&i>=u.from)vs.push(q)});if(pe)pe.forEach(function(q,i){if(q!=null&&i>=u.from)vs.push(q)});
+ var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs),pd=(mx-mn||1)*.12;mn-=pd;mx+=pd;var x0=u.from,X=function(i){return l+(i-x0)*(w-l-rr)/Math.max(1,nn-1-x0)},Y=function(q){return t0+(mx-q)*(h-t0-b)/(mx-mn)},dec=(mx-mn)>20?0:(mx-mn)>2?1:2,s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Data of the selected parameter">',g,i;
+ u.is.forEach(function(x){x.sp.forEach(function(a){if(a[1]>=a[0])s+='<rect x="'+(X(Math.max(a[0],x0))-(sen?2:8))+'" y="'+t0+'" width="'+(X(a[1])-X(Math.max(a[0],x0))+(sen?4:16))+'" height="'+(h-t0-b)+'" fill="'+(x.s===2?'var(--badb)':'var(--wab)')+'"><title>'+CH[x.c]+'</title></rect>'})});
+ for(g=0;g<=4;g++){var q=mn+(mx-mn)*g/4;s+='<line x1="'+l+'" x2="'+(w-rr)+'" y1="'+Y(q)+'" y2="'+Y(q)+'" stroke="var(--line)"/><text x="'+(l-5)+'" y="'+(Y(q)+3)+'" text-anchor="end">'+q.toFixed(dec)+'</text>'}
+ var stp=sen?16:(u.ty.cad==='w'?2:2);for(i=x0;i<nn;i+=stp)s+='<text x="'+X(i)+'" y="'+(h-7)+'" text-anchor="middle">'+(sen?lab(u,i).replace('Today ','').replace('Yesterday ','Y '):lab(u,i).replace('Week of ','').replace(/^\w{3} /,''))+'</text>';
+ var path=function(a,c,wd,da){var dd='',on=false;a.forEach(function(q,i){if(q==null||i<x0){on=false;return}dd+=(on?'L':'M')+X(i).toFixed(1)+' '+Y(q).toFixed(1);on=true});return'<path d="'+dd+'" fill="none" stroke="'+c+'" stroke-width="'+wd+'"'+(da?' stroke-dasharray="'+da+'"':'')+' stroke-linejoin="round"/>'};
+ if(pe)s+=path(pe,'var(--gr)',1.8,'5 4');s+=path(u.v,'var(--accent)',2.2);
+ if(!sen)u.v.forEach(function(q,i){if(i<x0)return;if(q!=null)s+='<circle cx="'+X(i)+'" cy="'+Y(q)+'" r="3.2" fill="var(--accent)"><title>'+lab(u,i)+': '+q+' '+u.ty.u+'</title></circle>';else s+='<text x="'+X(i)+'" y="'+(h-b-6)+'" text-anchor="middle" style="fill:var(--bad);font-size:14px;font-weight:700">×<title>'+lab(u,i)+': no entry</title></text>'});
+ u.is.forEach(function(x){x.pt.forEach(function(i){s+='<circle cx="'+X(i)+'" cy="'+Y(u.v[i])+'" r="6" fill="none" stroke="var(--bad)" stroke-width="2"><title>'+lab(u,i)+': '+u.v[i]+' '+u.ty.u+'</title></circle>'})});
+ return s+'</svg><div class="lg"><span><i style="--cc:var(--accent)"></i>This parameter</span>'+(pe?'<span><i style="--cc:var(--gr)"></i>'+(sen?'Middle value of the same sensor type in all polyhouses':'Usual value for this crop and age')+'</span>':'')+'<span><i style="--cc:var(--badb)"></i>Period flagged</span><span>Red circle: flagged value</span>'+(sen?'':'<span style="color:var(--bad)">× missing entry</span>')+'</div>'}
+function render(){
+ var nw=U.filter(function(u){return u.s===1}).length,nc=U.filter(function(u){return u.s===2}).length,N=U.length,nok=N-nw-nc,fl=nw+nc,man=N*P.mp,wd=fl*P.mp+2;
+ $('tiles').innerHTML='<div><span>Parameters checked</span><b>'+N+'</b><u>'+N*6+' checks in all</u></div><div><span>Healthy</span><b class="cok">'+nok+'</b><u>'+Math.round(nok/N*100)+'% of parameters</u></div><div><span>Warning</span><b class="cwa">'+nw+'</b><u>review today</u></div><div><span>Critical</span><b class="cbad">'+nc+'</b><u>fix first</u></div><div><span>Review by hand</span><b>'+dur(man)+'</b><u>'+P.mp+' min × '+N+'</u></div><div><span>With the checks</span><b class="cok">'+dur(wd)+'</b><u>'+fl+' flagged, plus 2 min</u></div>';
+ $('tabs').innerHTML=[{k:'all',n:'All data'}].concat(SEC).map(function(c){var cnt=sum(U.map(function(u){return(c.k==='all'||u.ty.sec===c.k)&&u.is.length?1:0}));return'<button type="button" class="tab" data-k="'+c.k+'" aria-pressed="'+(st.sec===c.k)+'">'+c.n+'<b>'+cnt+'</b></button>'}).join('');
+ var cols=[];TY.forEach(function(t,i){if(st.sec==='all'||t.sec===st.sec)cols.push(i)});
+ var hm='<div></div>',gi=0;SEC.forEach(function(sc){var c=cols.filter(function(i){return TY[i].sec===sc.k}).length;if(c)hm+='<div class="g" style="grid-column:span '+c+'" title="'+sc.n+'">'+(c>=3||st.sec!=='all'?sc.n:sc.n.split(' ')[0])+'</div>'});
+ hm+='<div></div>'+cols.map(function(i){return'<div class="h" title="'+TY[i].n+'">'+TY[i].sh+'</div>'}).join('');
+ PH.forEach(function(p){hm+='<div class="r">'+p.id+'</div>'+cols.map(function(ti){var u=G[p.i][ti];if(!u)return'<button class="hc" disabled aria-label="Not expected" title="'+p.id+' · '+TY[ti].n+': not expected">–</button>';var q=U.indexOf(u);return'<button type="button" class="hc s'+u.s+(q===st.sel?' sel':'')+'" data-u="'+q+'" aria-label="'+u.id+', '+SEVN[u.s]+', '+u.is.length+' failed checks" title="'+p.id+' · '+u.ty.n+' · '+SEVN[u.s]+'">'+(u.is.length||'✓')+'</button>'}).join('')});
+ $('hm').style.setProperty('--nc',cols.length);$('hm').innerHTML=hm;
+ var rows=[];U.forEach(function(u,q){if(st.sec!=='all'&&u.ty.sec!==st.sec)return;u.is.forEach(function(x){rows.push({u:u,q:q,x:x})})});rows.sort(function(a,b){return b.x.s-a.x.s||a.q-b.q});
+ var fr=rows.filter(function(e){return(st.sv==='all'||+st.sv===e.x.s)&&(st.ow==='all'||st.ow===e.x.w)});
+ $('cnt').textContent=fr.length+' of '+rows.length;
+ $('todo').innerHTML=fr.length?fr.map(function(e){return'<button type="button" class="it '+(e.x.s===2?'c':'')+(e.q===st.sel?' sel':'')+'" data-u="'+e.q+'"><i></i><div><b>Polyhouse '+PH[e.u.pi].id+', '+e.u.ty.n+'<span class="chip">'+(e.x.w==='op'?'Data operator':'Maintenance')+'</span></b><span>'+e.x.m+'</span><span class="m">'+CH[e.x.c]+' · since '+e.x.at+'. Do: '+e.x.a+'</span></div></button>'}).join(''):'<div class="fd">Nothing to fix here. All checks passed.</div>';
+ var u=U[st.sel];$('dt').textContent='Polyhouse '+PH[u.pi].id+', '+u.ty.n+(u.ty.u?' ('+u.ty.u+')':'')+', '+(u.ty.cad==='s'?'last 24 hours':u.ty.cad==='w'?'weekly entries':'daily entries')+', expected '+(u.ty.cad==='s'?'every 15 minutes':u.ty.cad==='w'?'once a week':'every day');
+ $('df').innerHTML='<div class="fd"><b class="'+SEVC[u.s]+'">'+SEVN[u.s]+'.</b> '+(u.is.length?u.is.map(function(x){return CH[x.c]+': '+x.m}).join('. ')+'.':'All six checks passed.')+'</div>'+line(u);
+}
+function init(){$('rules').innerHTML=RULES.map(function(r){return'<tr><td><b>'+r[1]+'</b></td><td>'+r[2]+'</td><td>'+r[3]+'</td></tr>'}).join('');runAll();var f=U.findIndex(function(u){return u.s===2});st.sel=f<0?0:f;render()}
+$('hm').addEventListener('click',function(e){var b=e.target.closest('[data-u]');if(b){st.sel=+b.dataset.u;render()}});
+$('todo').addEventListener('click',function(e){var b=e.target.closest('[data-u]');if(b){st.sel=+b.dataset.u;render()}});
+$('tabs').addEventListener('click',function(e){var b=e.target.closest('[data-k]');if(b){st.sec=b.dataset.k;render()}});
+function seg(id,key,att){$(id).addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;st[key]=b.dataset[att];Array.prototype.forEach.call($(id).children,function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});render()})}
+seg('sv','sv','s');seg('ow','ow','o');
+$('po').addEventListener('input',function(e){var v=parseFloat(e.target.value);if(v>0){P.off=v;runAll();render()}});
+$('pf').addEventListener('input',function(e){var v=parseFloat(e.target.value);if(v>0){P.fl=v;runAll();render()}});
+$('pm').addEventListener('input',function(e){var v=parseFloat(e.target.value);if(v>0){P.mp=v;render()}});
+var root=document.documentElement;try{var th=localStorage.getItem('theme');if(th)root.setAttribute('data-theme',th)}catch(e){}
+$('tb').addEventListener('click',function(){var c=root.getAttribute('data-theme'),dk=c?c==='dark':matchMedia('(prefers-color-scheme: dark)').matches,nn=dk?'light':'dark';root.setAttribute('data-theme',nn);try{localStorage.setItem('theme',nn)}catch(e){}});
+init();
+})();
+</script>
+</body>
+</html>

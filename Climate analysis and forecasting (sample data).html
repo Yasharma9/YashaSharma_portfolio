@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Climate analysis and forecasting (sample data)</title>
+<style>
+:root{--bg:#111217;--pn:#181b1f;--bd:#2c3235;--tx:#ccccdc;--mu:#8e8e9d;--ok:#73bf69;--wa:#f2cc0c;--bad:#f2495c;--bl:#5794f2;--or:#ff9830;--pu:#b877d9;--fc:rgba(87,148,242,.07);--hv:#22252b;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f4f5f5;--pn:#fff;--bd:#d8d9da;--tx:#24292e;--mu:#6c6f7a;--ok:#2f8a3a;--wa:#a67c00;--bad:#d1263c;--bl:#1f60c4;--or:#d96a12;--pu:#8f3bb8;--fc:rgba(31,96,196,.06);--hv:#eceef0}}
+:root[data-theme="light"]{--bg:#f4f5f5;--pn:#fff;--bd:#d8d9da;--tx:#24292e;--mu:#6c6f7a;--ok:#2f8a3a;--wa:#a67c00;--bad:#d1263c;--bl:#1f60c4;--or:#d96a12;--pu:#8f3bb8;--fc:rgba(31,96,196,.06);--hv:#eceef0}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:400 13px/1.45 Inter,"Segoe UI",system-ui,sans-serif}
+select,button{font:inherit;color:inherit;background:var(--pn);border:1px solid var(--bd);border-radius:2px;padding:4px 8px}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--bl);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:10px 12px 28px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:6px 0 10px}
+.bar h1{font-size:1.15rem;font-weight:500;margin:0 8px 0 0}
+.tag{font-size:.72rem;border-radius:2px;padding:1px 8px;background:rgba(242,204,12,.15);color:var(--wa)}
+.vr{display:flex;align-items:center;gap:0}.vr span{background:var(--hv);border:1px solid var(--bd);border-right:0;padding:4px 8px;color:var(--mu)}
+.g{display:grid;grid-template-columns:repeat(12,1fr);gap:8px}
+.pn{grid-column:span var(--sp);background:var(--pn);border:1px solid var(--bd);border-radius:2px;min-width:0}
+.pn h3{margin:0;padding:7px 10px;font-size:.88rem;font-weight:500}
+.bd{padding:0 10px 10px}
+.sv{font-size:2.1rem;font-weight:500;line-height:1.1}.sv small{font-size:.9rem;margin-left:3px;color:var(--mu)}
+.sd{color:var(--mu);font-size:.78rem}.sp{width:100%;height:30px;margin-top:4px}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--mu);font-size:10.5px;font-family:inherit}
+.lg{display:flex;gap:12px;flex-wrap:wrap;color:var(--mu);font-size:.78rem;margin-top:4px}.lg i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle;background:var(--cc)}
+.bg{display:grid;gap:12px;padding-top:6px}.bg div{display:grid;grid-template-columns:1fr auto;gap:2px 8px}
+.bg .t{height:14px;background:var(--hv);border-radius:2px;overflow:hidden;grid-column:1/-1}.bg .t i{display:block;height:100%}
+table{width:100%;border-collapse:collapse;font-size:.82rem}th,td{padding:6px 9px;text-align:left;border-bottom:1px solid var(--bd);white-space:nowrap}th{color:var(--mu);font-weight:500}
+.tw{overflow-x:auto}
+.c-ok{background:rgba(115,191,105,.18)}.c-wa{background:rgba(242,204,12,.18)}.c-bad{background:rgba(242,73,92,.2)}.c-bl{background:rgba(87,148,242,.2)}
+.bgr{margin-top:12px}.bt{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:3px}.bt em{font-style:normal;font-weight:500}
+.sb{display:flex;height:20px;border-radius:2px;overflow:hidden;background:var(--hv)}.sb i{display:flex;align-items:center;justify-content:center;font-style:normal;font-size:.72rem;color:#fff}
+.nt{margin-top:10px;color:var(--mu);font-size:.8rem;max-width:110ch}
+@media (max-width:760px){.pn{grid-column:1/-1}.pn.st{grid-column:span 6}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="bar">
+    <h1>Climate analysis and forecasting</h1><span class="tag">Sample data</span>
+    <div class="vr"><span>Farm</span><select id="fm" aria-label="Farm"><option>F001</option></select></div>
+    <div class="vr"><span>Polyhouse</span><select id="ph" aria-label="Polyhouse"></select></div>
+    <div class="vr"><span>Time range</span><select id="rg" aria-label="Time range"><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30" selected>Last 30 days</option><option value="60">Last 60 days</option></select></div>
+    <span style="color:var(--mu)">Forecast: next 7 days</span>
+    <button id="tb" type="button" style="margin-left:auto" aria-label="Switch light or dark theme">Theme</button>
+  </div>
+  <div class="g" id="g"></div>
+  <p class="nt">How to read this: solid lines are readings, dashed lines are the 7-day forecast and the shaded band is its likely range. The forecast starts from the seasonal normal for each date, plus today’s departure from normal, fading over about four days. The range is based on how far the last 30 days strayed from normal. The growth index is an illustrative 0 to 100 score from temperature, light and VPD. All data is randomly generated.</p>
+</div>
+<script>
+(function(){
+var DAY=864e5,TODAY=Date.UTC(2026,10,20),IDS='ABCDEFGHIJKLMNOPQRST'.split(''),S=Math.sin,TP=Math.PI*2,MO='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+var $=function(i){return document.getElementById(i)},sum=function(a){return a.reduce(function(x,y){return x+y},0)},mean=function(a){return sum(a)/a.length};
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function es(t){return .6108*Math.exp(17.27*t/(t+237.3))}
+function dd(t){var d=new Date(t);return d.getUTCDate()+' '+MO[d.getUTCMonth()]}
+function clim(k,t){var d=new Date(t),y=Math.floor((t-Date.UTC(d.getUTCFullYear(),0,0))/DAY);
+ return k==='tx'?26+4*S(TP*(y-100)/365):k==='tn'?17+6*S(TP*(y-100)/365):k==='rh'?70-7*S(TP*(y-60)/365):16+5.5*S(TP*(y-80)/365)}
+function gi(tx,tn,vpd,tsr){var tm=(tx+tn)/2,ft=Math.exp(-Math.pow((tm-21)/6,2)),fl=Math.min(1,tsr/18),fv=vpd<.8?Math.max(.5,1-(.8-vpd)*.6):vpd>1.2?Math.max(.4,1-(vpd-1.2)*.7):1;return 100*ft*(.4+.6*fl)*fv}
+function gdd(tx,tn){return Math.max(0,(Math.min(tx,30)+Math.max(tn,10))/2-10)}
+function build(pi){
+ var r=rng(500+pi*17),n=function(){return r()*2-1},off=(pi%5-2)*.4,days=[],hr=[],e=0,c=0,d,h;
+ for(d=-59;d<=0;d++){
+  var t=TODAY+d*DAY;c=.7*c+n()*.7;e=.6*e+n()*.8;
+  var tx=clim('tx',t)+off+1.5*c+e*.9,tn=clim('tn',t)-1.2*c+off*.5+n()*.8,rhm=clim('rh',t)-5*c+n()*3,tsr=Math.max(2,clim('tsr',t)+3.2*c+n()*.9);
+  var tm=(tx+tn)/2,am=(tx-tn)/2,ea=es(tm)*rhm/100,rows=[],mx=-99,mn=99,rs=0,vs=0,vc=0;
+  for(h=0;h<24;h++){var T=tm+am*S(TP*(h-8)/24)+n()*.35,rh=Math.min(100,ea/es(T)*100);rows.push(T);mx=Math.max(mx,T);mn=Math.min(mn,T);rs+=rh;if(h>=11&&h<=15){vs+=es(T)*(1-rh/100);vc++}}
+  hr.push(rows);var v=vs/vc;days.push({t:t,tx:mx,tn:mn,rh:rs/24,vpd:v,tsr:tsr,gi:gi(mx,mn,v,tsr),gdd:gdd(mx,mn)});
+ }
+ return{days:days,hr:hr};
+}
+function forecast(days){
+ var last=days[days.length-1],L=days.slice(-30),ks=['tx','tn','rh','tsr','vpd'],sd={},tg={},o=[],h;
+ ks.forEach(function(k){var m=mean(L.map(function(x){return x[k]}));tg[k]=k==='vpd'?function(){return m}:function(t){return clim(k,t)};
+  var res=L.map(function(x){return x[k]-tg[k](x.t)}),mr=mean(res);sd[k]=Math.sqrt(mean(res.map(function(x){return Math.pow(x-mr,2)})))});
+ for(h=1;h<=7;h++){var f={t:last.t+h*DAY,b:{}};
+  ks.forEach(function(k){var v=tg[k](f.t)+(last[k]-tg[k](last.t))*Math.pow(.75,h),w=1.28*sd[k]*(.45+.2*h);if(k==='rh')v=Math.min(100,v);if(k==='tsr')v=Math.max(1,v);f[k]=v;f.b[k]=[v-w,v+w]});
+  f.gi=gi(f.tx,f.tn,f.vpd,f.tsr);f.gdd=gdd(f.tx,f.tn);f.b.gi=[f.gi*(1-.06-.03*h),Math.min(100,f.gi*(1+.06+.03*h))];o.push(f)}
+ return o;
+}
+var st={ph:'A',rg:30},P,F;
+function hist(){return P.days.slice(-st.rg)}
+function mk(k){var h=hist(),R=h.length,m={obs:[],fc:[],lo:[],hi:[]},i;
+ for(i=0;i<R+7;i++){m.obs.push(i<R?h[i][k]:null);m.fc.push(i===R-1?h[i][k]:i>=R?F[i-R][k]:null);m.lo.push(i===R-1?h[i][k]:i>=R?F[i-R].b[k][0]:null);m.hi.push(i===R-1?h[i][k]:i>=R?F[i-R].b[k][1]:null)}
+ return m}
+function xs(){return hist().map(function(x){return x.t}).concat(F.map(function(x){return x.t}))}
+function ts(o){
+ var w=640,h=225,l=42,r=10,t=8,b=22,m=o.ser[0].m.obs.length,R=m-7,vs=[],xl=xs();
+ o.ser.forEach(function(q){[q.m.obs,q.m.fc,q.m.lo,q.m.hi].forEach(function(a){a.forEach(function(v){if(v!=null)vs.push(v)})})});
+ (o.th||[]).forEach(function(x){vs.push(x.v)});
+ var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs),pd=(mx-mn||1)*.08;mn-=pd;mx+=pd;
+ var cw=(w-l-r)/m,X=function(i){return l+(i+.5)*cw},Y=function(v){return t+(mx-v)*(h-t-b)/(mx-mn)};
+ var P2=function(a){var d='',on=false;a.forEach(function(v,i){if(v==null){on=false;return}d+=(on?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);on=true});return d};
+ var s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+o.t+'"><rect x="'+(l+R*cw)+'" y="'+t+'" width="'+(7*cw)+'" height="'+(h-t-b)+'" fill="var(--fc)"/>',dec=(mx-mn)>20?0:(mx-mn)>3?1:2,g,i;
+ for(g=0;g<=4;g++){var v=mn+(mx-mn)*g/4;s+='<line x1="'+l+'" x2="'+(w-r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--bd)"/><text x="'+(l-5)+'" y="'+(Y(v)+3)+'" text-anchor="end">'+v.toFixed(dec)+'</text>'}
+ for(i=0;i<m;i+=Math.ceil(m/8))s+='<text x="'+X(i)+'" y="'+(h-6)+'" text-anchor="middle">'+dd(xl[i])+'</text>';
+ (o.th||[]).forEach(function(x){s+='<line x1="'+l+'" x2="'+(w-r)+'" y1="'+Y(x.v)+'" y2="'+Y(x.v)+'" stroke="'+x.c+'" stroke-dasharray="5 4" opacity=".9"/>'});
+ o.ser.forEach(function(q){var d=P2(q.m.hi);
+  var up=[],dn=[];for(i=R-1;i<m;i++){up.push((i===R-1?'M':'L')+X(i).toFixed(1)+' '+Y(q.m.hi[i]).toFixed(1));dn.unshift('L'+X(i).toFixed(1)+' '+Y(q.m.lo[i]).toFixed(1))}
+  s+='<path d="'+up.join('')+dn.join('')+'Z" fill="'+q.c+'" opacity=".2"/><path d="'+P2(q.m.fc)+'" fill="none" stroke="'+q.c+'" stroke-width="2" stroke-dasharray="5 4"/><path d="'+P2(q.m.obs)+'" fill="none" stroke="'+q.c+'" stroke-width="1.8" stroke-linejoin="round"/>'});
+ for(i=0;i<m;i++)s+='<rect x="'+(X(i)-cw/2)+'" y="'+t+'" width="'+cw+'" height="'+(h-t-b)+'" fill="transparent"><title>'+dd(xl[i])+(i>=R?' (forecast)':'')+o.ser.map(function(q){var v=i<R?q.m.obs[i]:q.m.fc[i];return'\n'+q.n+': '+(v==null?'–':v.toFixed(dec))+o.u}).join('')+'</title></rect>';
+ var lg='<div class="lg">'+o.ser.map(function(q){return'<span><i style="--cc:'+q.c+'"></i>'+q.n+'</span>'}).join('')+'<span>Dashed and shaded: forecast</span>'+(o.th||[]).map(function(x){return'<span><i style="--cc:'+x.c+'"></i>'+x.n+'</span>'}).join('')+'</div>';
+ return s+'</svg>'+lg;
+}
+function pan(sp,t,b,c){return'<section class="pn '+(c||'')+'" style="--sp:'+sp+'"><h3>'+t+'</h3><div class="bd">'+b+'</div></section>'}
+function stat(t,k,u,d,col){var h=hist().map(function(x){return x[k]}),v=h[h.length-1],p=h[h.length-2],c=col(v),mn=Math.min.apply(null,h),mx=Math.max.apply(null,h),
+ pts=h.map(function(x,i){return(i*118/(h.length-1)).toFixed(1)+','+(26-(x-mn)/((mx-mn)||1)*24).toFixed(1)}).join(' ');
+ return pan(2,t,'<div class="sv" style="color:'+c+'">'+v.toFixed(d)+'<small>'+u+'</small></div><div class="sd">'+(v>=p?'+':'−')+Math.abs(v-p).toFixed(d)+' vs yesterday</div><svg viewBox="0 0 120 28" class="sp" aria-hidden="true"><polyline points="'+pts+'" fill="none" stroke="'+c+'" stroke-width="1.8"/></svg>','st')}
+function pc(p){return p>=80?'var(--ok)':p>=60?'var(--wa)':'var(--bad)'}
+function barg(){var h=hist(),n=h.length,
+ T=[['Day max','18 to 28 °C','tx',18,28],['Night min','13 °C or more','tn',13,99],['Humidity','60 to 80%','rh',60,80],['VPD','0.8 to 1.2 kPa','vpd',.8,1.2]],
+ cnt=function(a,q){var c=[0,0,0];a.forEach(function(x){var v=x[q[2]];c[v<q[3]?0:v>q[4]?2:1]++});return c},
+ seg=function(c,n,col){return c?'<i style="width:'+(c/n*100)+'%;background:'+col+'">'+(c/n>=.08?c:'')+'</i>':''},worst=null;
+ var rows=T.map(function(q){var c=cnt(h,q),f=cnt(F,q),pct=Math.round(c[1]/n*100);if(!worst||pct<worst.p)worst={p:pct,q:q,c:c};
+  return'<div class="bgr"><div class="bt"><span><b>'+q[0]+'</b>, target '+q[1]+'</span><em style="color:'+pc(pct)+'">'+c[1]+' of '+n+' days in target ('+pct+'%)</em></div><div class="sb">'+seg(c[0],n,'var(--bl)')+seg(c[1],n,'var(--ok)')+seg(c[2],n,'var(--bad)')+'</div><div class="sd">Next 7 days (forecast): '+f[1]+' of 7 in target</div></div>'}).join('');
+ var msg=worst.c[1]===n?'Every measure stayed in target on all '+n+' days.':'Biggest gap: '+(worst.q[0]==='VPD'?'VPD':worst.q[0].toLowerCase())+' was '+(worst.c[0]>=worst.c[2]?'below':'above')+' target on '+Math.max(worst.c[0],worst.c[2])+' of '+n+' days.';
+ return pan(4,'Days against target, last '+n+' days',rows+'<div class="lg"><span><i style="--cc:var(--bl)"></i>Below target</span><span><i style="--cc:var(--ok)"></i>In target</span><span><i style="--cc:var(--bad)"></i>Above target</span></div><div class="sd" style="margin-top:8px;color:var(--tx)">'+msg+'</div>')}
+function lerp(a,b,f){var p=function(h,j){return parseInt(h.substr(1+j*2,2),16)};return'rgb('+[0,1,2].map(function(j){return Math.round(p(a,j)+(p(b,j)-p(a,j))*f)}).join(',')+')'}
+var RB=['#2c7bb6','#abd9e9','#ffffbf','#fdae61','#d7191c'];
+function rb(v){var x=Math.max(0,Math.min(.999,(v-8)/28))*4,i=Math.floor(x);return lerp(RB[i],RB[i+1],x-i)}
+function hc(v){return v<13?'#3274d9':v<18?'#a8c8f5':v<=28?'#73bf69':'#f2495c'}
+function hw(v){return v<13?'too cold':v<18?'cool':v<=28?'ideal':'too hot'}
+function heat(){var cols=P.hr.slice(-st.rg),h=hist(),l=40,w=640,n=cols.length,cw=(w-l-6)/n,ch=10,s='<svg viewBox="0 0 '+w+' '+(24*ch+44)+'" role="img" aria-label="Hourly temperature by hour of day and date">',i,j;
+ cols.forEach(function(c,i){c.forEach(function(v,j){s+='<rect x="'+(l+i*cw)+'" y="'+((23-j)*ch)+'" width="'+(cw-(n>20?.4:1.5))+'" height="'+(ch-1)+'" fill="'+hc(v)+'"><title>'+dd(h[i].t)+', '+j+':00\n'+v.toFixed(1)+' °C ('+hw(v)+')</title></rect>'})});
+ for(j=0;j<24;j+=3)s+='<text x="'+(l-5)+'" y="'+((23-j)*ch+8)+'" text-anchor="end">'+(j<10?'0':'')+j+':00</text>';
+ s+='<text transform="rotate(-90 8 120)" x="8" y="120" text-anchor="middle">Hour of day</text>';
+ for(i=0;i<n;i+=Math.ceil(n/8))s+='<text x="'+(l+i*cw+cw/2)+'" y="'+(24*ch+13)+'" text-anchor="middle">'+dd(h[i].t)+'</text>';
+ [['#3274d9','Below 13 °C'],['#a8c8f5','13 to 18 °C'],['#73bf69','18 to 28 °C (ideal)'],['#f2495c','Above 28 °C']].forEach(function(q,k){var x=l+[0,100,200,340][k];s+='<rect x="'+x+'" y="'+(24*ch+24)+'" width="11" height="11" rx="2" fill="'+q[0]+'"/><text x="'+(x+16)+'" y="'+(24*ch+33)+'">'+q[1]+'</text>'});
+ return pan(8,'Hourly temperature, each cell is one hour','<div style="overflow-x:auto"><div style="min-width:520px">'+s+'</svg></div></div><div class="sd">Read across a row to see one hour of the day over time, and down a column to see one full day. Green is within the ideal 18 to 28 °C, light blue is cool (normal at night), dark blue is below the 13 °C night minimum.</div>')}
+function arc(cx,cy,r,a0,a1){var p=function(a){return(cx+r*Math.cos(a)).toFixed(1)+' '+(cy-r*Math.sin(a)).toFixed(1)};return'M'+p(a0)+'A'+r+' '+r+' 0 0 1 '+p(a1)}
+function gauge(t,v,mx,txt,col,sub){var f=Math.min(1,v/mx);
+ return pan(2,t,'<svg viewBox="0 0 160 100" role="img" aria-label="'+t+'"><path d="'+arc(80,80,58,Math.PI,0)+'" fill="none" stroke="var(--hv)" stroke-width="12"/>'+(f>0?'<path d="'+arc(80,80,58,Math.PI,Math.PI*(1-f))+'" fill="none" stroke="'+col+'" stroke-width="12"/>':'')+'<text x="80" y="76" text-anchor="middle" style="font-size:22px;fill:'+col+'">'+txt+'</text></svg><div class="sd" style="text-align:center">'+sub+'</div>')}
+function tl(){var h=hist(),R=h.length,m=R+7,all=h.concat(F),l=88,w=640,cw=(w-l-4)/m,rh=22,
+ rows=[['Day max','tx',18,28,1],['Night min','tn',13,99,1],['Humidity','rh',60,80,0],['VPD','vpd',.8,1.2,2]],s='<svg viewBox="0 0 '+w+' '+(rows.length*rh+30)+'" role="img" aria-label="Daily status against targets">';
+ rows.forEach(function(q,r){s+='<text x="'+(l-8)+'" y="'+(r*rh+15)+'" text-anchor="end">'+q[0]+'</text>';
+  all.forEach(function(d,i){var v=d[q[1]],c=v<q[2]?'var(--bl)':v>q[3]?'var(--bad)':'var(--ok)',fc=i>=R;
+   s+='<rect x="'+(l+i*cw)+'" y="'+(r*rh+2)+'" width="'+(cw-1)+'" height="'+(rh-4)+'" fill="'+c+'" opacity="'+(fc?.45:.9)+'"><title>'+dd(d.t)+(fc?' (forecast)':'')+': '+v.toFixed(q[4])+'</title></rect>'})});
+ for(var i=0;i<m;i+=Math.ceil(m/8))s+='<text x="'+(l+i*cw+cw/2)+'" y="'+(rows.length*rh+14)+'" text-anchor="middle">'+dd(all[i].t)+'</text>';
+ return pan(12,'Daily status against targets','<div style="overflow-x:auto"><div style="min-width:520px">'+s+'</svg></div></div><div class="lg"><span><i style="--cc:var(--bl)"></i>Below target</span><span><i style="--cc:var(--ok)"></i>In target</span><span><i style="--cc:var(--bad)"></i>Above target</span><span>Faded cells: forecast</span></div>')}
+function risk(d){var o=[];if(d.tn<13)o.push('Cold night');if(d.tx>28)o.push('Heat stress');if(d.rh>80)o.push('High humidity, disease risk');if(d.vpd>1.2)o.push('Dry air');if(d.vpd<.8&&d.rh<=80)o.push('Low evaporation');return o.length?o.join(', '):'No concern'}
+function table(){var f=function(v,lo,hi){return v<lo?'c-bl':v>hi?'c-bad':'c-ok'};
+ return pan(12,'7-day forecast: outlook and growth impact','<div class="sd" style="margin-bottom:6px">Forecast for the next 7 days, not observed readings. '+F.filter(function(x){return x.tn<13}).length+' of 7 nights are expected below 13 °C and '+F.filter(function(x){return x.tx>28}).length+' of 7 days above 28 °C.</div><div class="tw"><table><thead><tr><th>Date</th><th>Day max (°C)</th><th>Night min (°C)</th><th>Humidity (%)</th><th>VPD (kPa)</th><th>Solar (MJ/m²)</th><th>Growth index</th><th>Watch-outs</th></tr></thead><tbody>'+F.map(function(d){var rk=risk(d);
+  return'<tr><td>'+dd(d.t)+'</td><td class="'+f(d.tx,18,28)+'">'+d.tx.toFixed(1)+'</td><td class="'+f(d.tn,13,99)+'">'+d.tn.toFixed(1)+'</td><td class="'+f(d.rh,60,80)+'">'+d.rh.toFixed(0)+'</td><td class="'+f(d.vpd,.8,1.2)+'">'+d.vpd.toFixed(2)+'</td><td>'+d.tsr.toFixed(1)+'</td><td class="'+(d.gi>=70?'c-ok':d.gi>=50?'c-wa':'c-bad')+'">'+d.gi.toFixed(0)+'</td><td class="'+(rk==='No concern'?'c-ok':'c-wa')+'">'+rk+'</td></tr>'}).join('')+'</tbody></table></div>')}
+function render(){
+ P=build(IDS.indexOf(st.ph));F=forecast(P.days);
+ var h=hist(),hrs=P.hr.slice(-st.rg),nh=sum(hrs.map(function(x){return x.length})),hot=sum(hrs.map(function(x){return x.filter(function(v){return v>28}).length})),cold=h.filter(function(x){return x.tn<13}).length,hp=hot/nh*100,fcc=F.filter(function(x){return x.tn<13}).length,fch=F.filter(function(x){return x.tx>28}).length;
+ var okc=function(v,lo,hi){return v<lo||v>hi?'var(--bad)':'var(--ok)'},wac=function(v,lo,hi){return v<lo||v>hi?'var(--wa)':'var(--ok)'};
+ $('g').innerHTML=
+  stat('Day temperature (max)','tx','°C',1,function(v){return okc(v,18,28)})+stat('Night temperature (min)','tn','°C',1,function(v){return okc(v,13,99)})+stat('Humidity (mean)','rh','%',0,function(v){return wac(v,60,80)})+
+  stat('VPD (midday)','vpd','kPa',2,function(v){return wac(v,.8,1.2)})+stat('Solar radiation','tsr','MJ/m²',1,function(){return'var(--bl)'})+stat('Growing degree days','gdd','°C·day',1,function(){return'var(--pu)'})+
+  pan(8,'Temperature: daily max and min',ts({t:'Temperature trend',u:' °C',ser:[{n:'Day max',c:'var(--or)',m:mk('tx')},{n:'Night min',c:'var(--bl)',m:mk('tn')}],th:[{v:28,c:'var(--bad)',n:'28 °C limit'},{v:18,c:'var(--wa)',n:'18 °C'},{v:13,c:'var(--bad)',n:'13 °C night minimum'}]}))+barg()+
+  pan(6,'Relative humidity',ts({t:'Humidity trend',u:' %',ser:[{n:'Humidity',c:'var(--bl)',m:mk('rh')}],th:[{v:80,c:'var(--bad)',n:'80%'},{v:60,c:'var(--wa)',n:'60%'}]}))+
+  pan(6,'Vapour pressure deficit (VPD)',ts({t:'VPD trend',u:' kPa',ser:[{n:'VPD',c:'var(--pu)',m:mk('vpd')}],th:[{v:1.2,c:'var(--bad)',n:'1.2 kPa'},{v:.8,c:'var(--wa)',n:'0.8 kPa'}]}))+
+  heat()+gauge('Heat-stress hours, last '+h.length+' days',hp,30,hp.toFixed(1)+'%',hp<5?'var(--ok)':hp<15?'var(--wa)':'var(--bad)','Observed: '+hot+' of '+nh+' hours above 28 °C. Forecast: '+fch+' of next 7 days.')+
+  gauge('Cold nights, last '+h.length+' days',cold,h.length,String(cold),cold===0?'var(--ok)':cold/h.length<.3?'var(--wa)':'var(--bad)','Observed: '+cold+' of '+h.length+' nights below 13 °C. Forecast: '+fcc+' of next 7 nights.')+
+  tl()+
+  pan(6,'Solar radiation (TSR)',ts({t:'Solar radiation trend',u:' MJ/m²',ser:[{n:'TSR',c:'var(--or)',m:mk('tsr')}]}))+
+  pan(6,'Crop growth index (illustrative)',ts({t:'Growth index trend',u:'',ser:[{n:'Growth index',c:'var(--ok)',m:mk('gi')}],th:[{v:70,c:'var(--wa)',n:'70: good growing day'}]}))+
+  table();
+}
+$('ph').innerHTML=IDS.map(function(i){return'<option>'+i+'</option>'}).join('');
+$('ph').addEventListener('change',function(e){st.ph=e.target.value;render()});
+$('rg').addEventListener('change',function(e){st.rg=+e.target.value;render()});
+var root=document.documentElement;try{var t=localStorage.getItem('theme');if(t)root.setAttribute('data-theme',t)}catch(e){}
+$('tb').addEventListener('click',function(){var c=root.getAttribute('data-theme'),d=c?c==='dark':!matchMedia('(prefers-color-scheme: light)').matches,n=d?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}});
+render();
+})();
+</script>
+</body>
+</html>

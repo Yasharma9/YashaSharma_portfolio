@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sensor placement with cluster analysis (sample data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f7;--surface:#fff;--ink:#16232a;--muted:#55666e;--line:#d3dde1;--accent:#00789a;--accent-ink:#fff;--soft:#dcecf1;--crop:#8cc07a;--aisle:#c9dcf5;--ok:#2e9e5b;--bad:#d64545;--warn:#8a6a1f;--warn-bg:#f3ead1;--gr:#8a95a0;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--accent-ink:#07202a;--soft:#1c3640;--crop:#3c6e43;--aisle:#26405f;--ok:#4ccc85;--bad:#ff6b6b;--warn:#e2c46e;--warn-bg:#2e2916;--gr:#8fa0ab}}
+:root[data-theme="dark"]{--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--accent-ink:#07202a;--soft:#1c3640;--crop:#3c6e43;--aisle:#26405f;--ok:#4ccc85;--bad:#ff6b6b;--warn:#e2c46e;--warn-bg:#2e2916;--gr:#8fa0ab}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 "Instrument Sans",system-ui,sans-serif}
+h1,h2{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+button,input{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px 40px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:22px 0 12px}
+h1{font-size:clamp(1.5rem,4.5vw,2.2rem)}.tag{display:inline-block;font-size:.74rem;border-radius:999px;padding:1px 10px;background:var(--warn-bg);color:var(--warn);margin-left:8px;vertical-align:middle}
+.sub{color:var(--muted);margin:6px 0 0;max-width:72ch;font-size:.93rem}
+.theme,.pre button,.seg button{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 12px;font-size:.88rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+.panel h2{font-size:1.15rem;margin-bottom:4px}.note{color:var(--muted);font-size:.86rem;margin:0 0 8px}
+.ctl{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}.ctl label{display:block;font-weight:500;font-size:.88rem;margin-bottom:3px}
+.ctl input[type=range]{width:240px;accent-color:var(--accent)}.ctl input[type=number]{width:84px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+.kv{font:700 1.6rem "Bricolage Grotesque",sans-serif;color:var(--accent)}
+.pre,.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button[aria-pressed="true"],.pre button:hover{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.two{display:grid;grid-template-columns:1fr 1.15fr;gap:14px;align-items:start}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.tiles div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 11px}.tiles span{display:block;font-size:.76rem;color:var(--muted)}.tiles b{font-size:1.15rem}.tiles u{text-decoration:none;font-size:.78rem;color:var(--muted);display:block}
+.good{color:var(--ok)}.badc{color:var(--bad)}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--muted);font-size:11px;font-family:inherit}
+.lg{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:6px}.lg i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle;background:var(--cc)}
+.tw{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:.84rem;min-width:680px}th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:500}
+.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.msg{background:var(--soft);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:.92rem}
+.nt{margin-top:12px;color:var(--muted);font-size:.84rem;max-width:100ch}
+@media (max-width:860px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Sensor placement with cluster analysis<span class="tag">Sample data</span></h1>
+      <p class="sub">A sample 14-dome, 1-acre polyhouse has 42 temperature and humidity sensors: one on the south side, one in the centre and one on the north side of every dome. Clustering groups the sensors that behave alike, so one sensor per group can stand in for the rest. Change the number of sensors to see which locations are critical, how much accuracy is lost and what the sensors cost.</p>
+    </div>
+    <button class="theme" id="tb" type="button" aria-label="Switch light or dark theme">Theme</button>
+  </div>
+  <section class="panel">
+    <div class="ctl">
+      <div><label for="k">Critical sensor locations to keep</label><div style="display:flex;gap:10px;align-items:center"><input id="k" type="range" min="1" max="42" step="1" value="5"><span class="kv" id="kv">5</span></div></div>
+      <div><label>Quick picks</label><div class="pre" id="pre"><button type="button" data-k="42">42 (as installed)</button><button type="button" data-k="14">14</button><button type="button" data-k="5">5</button><button type="button" id="best">Smallest that meets target</button></div></div>
+      <div><label>Measure</label><div class="seg" id="seg"><button type="button" data-m="T" aria-pressed="true">Temperature</button><button type="button" data-m="RH" aria-pressed="false">Humidity</button></div></div>
+      <div><label for="tg">Acceptable error <span id="tu" style="color:var(--muted);font-weight:400">°C</span></label><input id="tg" type="number" step="0.05" min="0.05" value="0.2"></div>
+      <div><label for="cs">Cost per sensor (₹, assumed)</label><input id="cs" type="number" step="100" min="0" value="2500"></div>
+    </div>
+  </section>
+  <section class="panel"><h2>Sensor map</h2><p class="note">Plan of the polyhouse. Each coloured cell is one of the 42 sensors, and cells of the same colour belong to the same cluster. A cell with a dark outline is a critical location to keep. Hover a cell for its details.</p><div style="overflow-x:auto"><div style="min-width:720px" id="map"></div></div></section>
+  <div class="two">
+    <section class="panel"><h2>What you get</h2><div class="tiles" id="tiles"></div><div class="msg" id="msg"></div></section>
+    <section class="panel"><h2>Accuracy against number of sensors</h2><p class="note">Typical error when the kept sensors stand in for all 42 locations. Clustered picks are compared with the average of random picks.</p><div id="el"></div></section>
+  </div>
+  <section class="panel"><h2>Average of the polyhouse, last 3 days</h2><p class="note">The estimate from the kept sensors against the average of all 42.</p><div id="ts"></div></section>
+  <section class="panel"><h2>Clusters and the sensor to keep</h2><div class="tw"><table id="tb2"></table></div>
+    <p class="nt">How it works: for each sensor, four numbers describe its 14 days of hourly readings: average and daily swing of temperature, and the same for humidity. Sensors are then grouped by Ward hierarchical clustering. In each group, the sensor closest to the group’s centre is the one to keep. Each other sensor is estimated from the kept one, adjusted for its usual difference. The readings are randomly generated, with a warm zone in the centre-west domes, a cool zone near the east end, and different behaviour on the south side, centre and north side. Nothing here comes from a real polyhouse.</p></section>
+</div>
+<script>
+(function(){
+var ND=14,NS=42,NT=336,S=Math.sin,TP=Math.PI*2,$=function(i){return document.getElementById(i)};
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var r=rng(4242),n=function(){return r()*2-1},sum=function(a){return a.reduce(function(x,y){return x+y},0)},mean=function(a){return sum(a)/a.length},cl=function(v,a,b){return Math.max(a,Math.min(b,v))},p2=function(v){return(v<10?'0':'')+v};
+var D=[],dv=[],W=[],T0=[],dd=0,w=0,t,i,j;
+for(t=0;t<NT;t++){if(t%24===0)dd=.7*dd+.9*n();D.push(S(TP*((t%24)-9)/24));dv.push(dd);w=.85*w+.5*n();W.push(Math.max(0,w+.4));T0.push(22+dd+5*D[t])}
+var PN=['south side','centre','north side'],PL=['S','C','N'],PR=[2,5,8],SN=[],TS=[],RS=[];
+for(i=0;i<NS;i++){var d=Math.floor(i/3),p=i%3,hot=Math.exp(-Math.pow((d-9.5)/2.8,2))*(p===1?1:.6),coolE=Math.exp(-Math.pow((d-.3)/1.6,2)),westE=Math.exp(-Math.pow((13-d)/1.4,2)),
+ off=1.0*hot-.8*coolE+.35*westE+(p===0?.25:p===2?-.35:0),af=1+.28*hot-.18*coolE+.1*westE+(p===0?.14:p===2?-.14:0),vent=(p===1?.1:.4)+.3*coolE,cal=n()*.12,rc=n()*.6,ts=[],rs=[];
+ for(t=0;t<NT;t++){var T=T0[t]+5*(af-1)*D[t]+off-vent*W[t]+cal+n()*.08;ts.push(T);rs.push(cl(66-6*D[t]-3*(T-T0[t])+rc+n()*.5,25,98))}
+ SN.push({id:'D'+p2(d+1)+'-'+PL[p],dome:d+1,p:p,row:PR[p],cell:3,x:(d+.5)*8,y:[6,18,30][p]});TS.push(ts);RS.push(rs)}
+var MT=TS.map(mean),MR=RS.map(mean);
+function rangeAvg(a){var o=[];for(var q=0;q<NT/24;q++){var s=a.slice(q*24,q*24+24);o.push(Math.max.apply(null,s)-Math.min.apply(null,s))}return mean(o)}
+var F=SN.map(function(s,i){return[MT[i],rangeAvg(TS[i]),MR[i],rangeAvg(RS[i])]});
+for(j=0;j<4;j++){var cv=F.map(function(f){return f[j]}),m=mean(cv),sd=Math.sqrt(mean(cv.map(function(v){return(v-m)*(v-m)})))||1;F.forEach(function(f){f[j]=(f[j]-m)/sd})}
+function d2(a,b){var s=0;for(var q=0;q<a.length;q++)s+=(a[q]-b[q])*(a[q]-b[q]);return s}
+var parts={},cs=SN.map(function(s,i){return{m:[i],c:F[i].slice()}});parts[NS]=cs.map(function(c){return c.m.slice()});
+while(cs.length>1){var bi=0,bj=1,bd=1e18;for(i=0;i<cs.length;i++)for(j=i+1;j<cs.length;j++){var a=cs[i],b=cs[j],dq=a.m.length*b.m.length/(a.m.length+b.m.length)*d2(a.c,b.c);if(dq<bd){bd=dq;bi=i;bj=j}}
+ var A=cs[bi],B=cs[bj],na=A.m.length,nb=B.m.length;cs[bi]={m:A.m.concat(B.m),c:A.c.map(function(v,q){return(v*na+B.c[q]*nb)/(na+nb)})};cs.splice(bj,1);parts[cs.length]=cs.map(function(c){return c.m.slice()})}
+function pair(Ms,mus){var o=[];for(var a=0;a<NS;a++){var row=[];for(var b=0;b<NS;b++){var e=0;for(t=0;t<NT;t++){var df=(Ms[a][t]-mus[a])-(Ms[b][t]-mus[b]);e+=df*df}row.push(e/NT)}o.push(row)}return o}
+var PT=pair(TS,MT),PRH=pair(RS,MR),K={},k;
+for(k=1;k<=NS;k++){var pk=parts[k],lab=[],rep=[];pk.forEach(function(mem,ci){var c=[0,0,0,0];mem.forEach(function(s){for(var q=0;q<4;q++)c[q]+=F[s][q]/mem.length});var best=mem[0],bd2=1e18;mem.forEach(function(s){var dq=d2(F[s],c);if(dq<bd2){bd2=dq;best=s}});rep.push(best);mem.forEach(function(s){lab[s]=ci})});K[k]={mem:pk,lab:lab,rep:rep}}
+var dist=SN.map(function(a){return SN.map(function(b){return Math.hypot(a.x-b.x,a.y-b.y)})});
+function cerr(k,P){var q=K[k];return Math.sqrt(mean(SN.map(function(s,i){return P[i][q.rep[q.lab[i]]]})))}
+var rr=rng(99),RND={T:[],RH:[]},CT=[],CR=[];
+for(k=1;k<=NS;k++){var aT=0,aR=0,draws=150;for(var dr=0;dr<draws;dr++){var idx=SN.map(function(s,i){return i});for(i=NS-1;i>0;i--){j=Math.floor(rr()*(i+1));var tmp=idx[i];idx[i]=idx[j];idx[j]=tmp}var pk2=idx.slice(0,k),sT=0,sR=0;
+  SN.forEach(function(s,i){var bj2=pk2[0];pk2.forEach(function(p){if(dist[i][p]<dist[i][bj2])bj2=p});sT+=PT[i][bj2];sR+=PRH[i][bj2]});aT+=sT/NS;aR+=sR/NS}
+ RND.T[k]=Math.sqrt(aT/draws);RND.RH[k]=Math.sqrt(aR/draws);CT[k]=cerr(k,PT);CR[k]=cerr(k,PRH)}
+var st={k:5,m:'T',tg:.2,cost:2500};
+function col(ci,k){return'hsl('+Math.round((ci*137.5)%360)+',64%,'+(k>14?'50%':'47%')+')'}
+function fN(v,d){return v.toFixed(d)}
+function bestK(C){var b=NS;for(var kk=NS;kk>=1;kk--){if(C[kk]<=st.tg)b=kk;else break}return b}
+function lc(o){var w=640,h=o.h||230,l=44,rr2=10,t0=8,b=26,m=o.n,vs=[];o.ser.forEach(function(s){s.y.forEach(function(v){if(v!=null)vs.push(v)})});(o.band||[]).forEach(function(a){a.forEach(function(v){vs.push(v)})});if(o.th!=null)vs.push(o.th);
+ var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs),pd=(mx-mn||1)*.08;mn=o.zero?0:mn-pd;mx+=pd;var X=function(i){return l+i*(w-l-rr2)/(m-1)},Y=function(v){return t0+(mx-v)*(h-t0-b)/(mx-mn)},dec=(mx-mn)>8?0:(mx-mn)>.8?1:2;
+ var s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+o.t+'">',g,i;for(g=0;g<=4;g++){var v=mn+(mx-mn)*g/4;s+='<line x1="'+l+'" x2="'+(w-rr2)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(l-5)+'" y="'+(Y(v)+3)+'" text-anchor="end">'+v.toFixed(dec)+'</text>'}
+ for(i=0;i<m;i+=o.step)s+='<text x="'+X(i)+'" y="'+(h-8)+'" text-anchor="middle">'+o.xl(i)+'</text>';
+ if(o.band){var up='',dn='';for(i=0;i<m;i++){up+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(o.band[1][i]).toFixed(1);dn='L'+X(i).toFixed(1)+' '+Y(o.band[0][i]).toFixed(1)+dn}s+='<path d="'+up+dn+'Z" fill="var(--gr)" opacity=".22"/>'}
+ if(o.th!=null)s+='<line x1="'+l+'" x2="'+(w-rr2)+'" y1="'+Y(o.th)+'" y2="'+Y(o.th)+'" stroke="var(--bad)" stroke-dasharray="5 4"/><text x="'+(w-rr2)+'" y="'+(Y(o.th)-4)+'" text-anchor="end" style="fill:var(--bad)">'+o.thl+'</text>';
+ o.ser.forEach(function(q){var d='';q.y.forEach(function(v,i){if(v!=null)d+=(d?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)});s+='<path d="'+d+'" fill="none" stroke="'+q.c+'" stroke-width="'+(q.w||2.2)+'"'+(q.dash?' stroke-dasharray="'+q.dash+'"':'')+' stroke-linejoin="round"/>'});
+ if(o.mark!=null){var xm=X(o.mark);s+='<line x1="'+xm+'" x2="'+xm+'" y1="'+t0+'" y2="'+(h-b)+'" stroke="var(--ink)" stroke-dasharray="2 3"/>'+(o.markY!=null?'<circle cx="'+xm+'" cy="'+Y(o.markY)+'" r="5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/>':'')}
+ return s+'</svg><div class="lg">'+o.ser.map(function(q){return'<span><i style="--cc:'+q.c+'"></i>'+q.n+'</span>'}).join('')+(o.band?'<span><i style="--cc:var(--gr)"></i>Range across all 42 sensors</span>':'')+'</div>'}
+function mapSvg(q,k,P,u,dec){
+ var x0=40,y0=40,cw=13,rh=22,gw=ND*5*cw,gh=9*rh,s='<svg viewBox="0 0 '+(x0+gw+40)+' '+(y0+gh+44)+'" role="img" aria-label="Plan of the polyhouse with sensor locations">',d,r2,c;
+ s+='<rect x="'+x0+'" y="2" width="'+gw+'" height="18" rx="3" fill="var(--gr)" opacity=".3"/><text x="'+(x0+gw/2)+'" y="15" text-anchor="middle" style="font-weight:600;fill:var(--ink)">South</text>';
+ s+='<rect x="'+x0+'" y="'+y0+'" width="'+gw+'" height="'+gh+'" fill="var(--aisle)"/><rect x="'+x0+'" y="'+(y0+rh)+'" width="'+gw+'" height="'+(7*rh)+'" fill="var(--crop)"/>';
+ var gl='';for(c=1;c<ND*5;c++)gl+='M'+(x0+c*cw)+' '+(y0+rh)+'V'+(y0+8*rh);for(r2=2;r2<8;r2++)gl+='M'+x0+' '+(y0+r2*rh)+'H'+(x0+gw);s+='<path d="'+gl+'" stroke="#fff" stroke-opacity=".45" stroke-width=".7" fill="none"/>';
+ for(d=0;d<=ND;d++)s+='<line x1="'+(x0+d*5*cw)+'" x2="'+(x0+d*5*cw)+'" y1="'+y0+'" y2="'+(y0+gh)+'" stroke="var(--ink)" stroke-width="'+(d%ND?.8:1.5)+'"/>';
+ for(d=0;d<ND;d++)s+='<text x="'+(x0+(d*5+2.5)*cw)+'" y="'+(y0-6)+'" text-anchor="middle" style="fill:var(--ink)">'+(d+1)+'</text>';
+ for(r2=0;r2<9;r2++)s+='<text x="'+(x0-6)+'" y="'+(y0+r2*rh+rh/2+4)+'" text-anchor="end">'+(r2+1)+'</text>';
+ s+='<text x="3" y="'+(y0+gh/2)+'" transform="rotate(-90 12 '+(y0+gh/2)+')" text-anchor="middle" style="font-weight:600;fill:var(--ink);font-size:13px">East</text><text x="'+(x0+gw+30)+'" y="'+(y0+gh/2)+'" transform="rotate(90 '+(x0+gw+30)+' '+(y0+gh/2)+')" text-anchor="middle" style="font-weight:600;fill:var(--ink);font-size:13px">West</text>';
+ s+='<rect x="'+x0+'" y="'+(y0+gh+8)+'" width="'+gw+'" height="18" rx="3" fill="var(--gr)" opacity=".3"/><text x="'+(x0+gw/2)+'" y="'+(y0+gh+21)+'" text-anchor="middle" style="font-weight:600;fill:var(--ink)">North</text><text x="'+x0+'" y="'+(y0+gh+40)+'" style="font-size:10px">Dome numbers run from the east end (1) to the west end (14). Rows 2, 5 and 8 hold the south, centre and north sensors, in the middle cell of each dome.</text>';
+ SN.forEach(function(sn,i){var ci=q.lab[i],keep=q.rep[ci]===i,rp=SN[q.rep[ci]],x=x0+((sn.dome-1)*5+sn.cell-1)*cw,y=y0+(sn.row-1)*rh;
+  s+='<rect x="'+(x-1)+'" y="'+(y+1)+'" width="'+(cw+2)+'" height="'+(rh-2)+'" rx="2" fill="'+col(ci,k)+'" stroke="'+(keep?'var(--ink)':'#fff')+'" stroke-width="'+(keep?2.6:.8)+'"><title>'+sn.id+' (dome '+sn.dome+', '+PN[sn.p]+', row '+sn.row+', cell '+sn.cell+')\nAverage '+fN(MT[i],1)+' °C, '+fN(MR[i],0)+'% RH\n'+(keep?'Critical location: keep this sensor':'Estimated from '+rp.id+', error '+fN(Math.sqrt(P[i][q.rep[ci]]),dec)+' '+u)+'</title></rect>';
+  if(keep&&k<=16)s+='<text x="'+(x+cw/2)+'" y="'+(y-2)+'" text-anchor="middle" style="fill:var(--ink);font-size:9px;font-weight:600">'+sn.id+'</text>'});
+ return s+'</svg>'}
+function render(){
+ var k=st.k,q=K[k],isT=st.m==='T',P=isT?PT:PRH,C=isT?CT:CR,RND2=isT?RND.T:RND.RH,u=isT?'°C':'% RH',dec=isT?2:1,best=bestK(C);
+ $('kv').textContent=k;$('k').value=k;$('tu').textContent=u;
+ $('map').innerHTML=mapSvg(q,k,P,u,dec);
+ var full=NS*st.cost,now=k*st.cost,save=Math.round((1-k/NS)*100),e=C[k],er=RND2[k],ok=e<=st.tg,A=isT?TS:RS,M2=isT?MT:MR,all=mean(M2),est=[],tr=[],lo=[],hi=[],mae=0,h0=NT-72,tt;
+ for(tt=h0;tt<NT;tt++){var col2=A.map(function(a){return a[tt]});tr.push(mean(col2));lo.push(Math.min.apply(null,col2));hi.push(Math.max.apply(null,col2));
+  var ev=0;q.mem.forEach(function(mem,ci){var rp=q.rep[ci];ev+=mem.length/NS*(A[rp][tt]+mean(mem.map(function(s2){return M2[s2]}))-M2[rp])});est.push(ev)}
+ est.forEach(function(v,i){mae+=Math.abs(v-tr[i])});mae/=est.length;
+ $('tiles').innerHTML='<div><span>Sensors per acre</span><b>'+k+'</b><u>installed: 42</u></div><div><span>Sensor cost</span><b>₹'+now.toLocaleString('en-IN')+'</b><u>was ₹'+full.toLocaleString('en-IN')+'</u></div><div><span>Cost saved</span><b class="'+(save>0?'good':'')+'">'+save+'%</b><u>against 42 sensors</u></div><div><span>Typical error per location</span><b class="'+(ok?'good':'badc')+'">'+fN(e,dec)+' '+u+'</b><u>random picks: '+fN(er,dec)+' '+u+'</u></div><div><span>Error in polyhouse average</span><b>'+fN(mae,dec)+' '+u+'</b><u>last 3 days</u></div><div><span>Smallest set that meets target</span><b>'+best+'</b><u>'+Math.round((1-best/NS)*100)+'% saving</u></div>';
+ var pctb=er>0?Math.round((1-e/er)*100):0;
+ $('msg').innerHTML=(ok?'<b class="good">Meets the target.</b> ':'<b class="badc">Misses the target.</b> ')+'With '+k+' sensors the typical error is '+fN(e,dec)+' '+u+', against a target of '+fN(st.tg,2)+' '+u+'. '+(k<NS?'Clustered picks are about '+Math.max(0,pctb)+'% more accurate than random picks of the same number. ':'')+'The smallest set that meets the target is '+best+' sensors, a saving of '+Math.round((1-best/NS)*100)+'%.';
+ var cy=[],ry=[];for(var kk=1;kk<=NS;kk++){cy.push(C[kk]);ry.push(RND2[kk])}
+ $('el').innerHTML=lc({t:'Error against number of sensors',n:NS,step:4,xl:function(i){return i+1},zero:1,th:st.tg,thl:'Target '+fN(st.tg,2)+' '+u,mark:k-1,markY:C[k],ser:[{n:'Clustered picks',c:'var(--accent)',y:cy},{n:'Random picks (average of 150 tries)',c:'var(--gr)',y:ry,dash:'5 4',w:2}]})+'<div class="note" style="margin:4px 0 0">Horizontal axis: sensors kept. Vertical axis: typical error in '+u+'.</div>';
+ $('ts').innerHTML=lc({t:'Polyhouse average, estimate against all sensors',n:72,step:12,xl:function(i){var x=h0+i;return'Day '+(Math.floor(x/24)+1)+' '+p2(x%24)+'h'},band:[lo,hi],ser:[{n:'Average of all 42 sensors',c:'var(--ink)',y:tr,w:2},{n:'Estimate from '+k+' sensors',c:'var(--accent)',y:est,dash:'5 4',w:2.2}]})+'<div class="note" style="margin:4px 0 0">'+(isT?'Temperature (°C)':'Relative humidity (%)')+'</div>';
+ var rows=q.mem.map(function(mem,ci){var rp=q.rep[ci],sn=SN[rp],mm=mean(mem.map(function(s2){return M2[s2]})),er2=Math.sqrt(mean(mem.map(function(s2){return P[s2][rp]})));
+  return'<tr><td><span class="sw" style="background:'+col(ci,k)+'"></span>Cluster '+(ci+1)+'</td><td>'+mem.length+'</td><td><b>'+sn.id+'</b>, dome '+sn.dome+' '+PN[sn.p]+' (row '+sn.row+', cell '+sn.cell+')</td><td>'+(mm-all>=0?'+':'−')+fN(Math.abs(mm-all),isT?2:1)+' '+u+'</td><td>'+fN(er2,dec)+' '+u+'</td><td style="white-space:normal;min-width:220px">'+mem.map(function(s2){return SN[s2].id}).join(', ')+'</td></tr>'});
+ $('tb2').innerHTML='<thead><tr><th>Cluster</th><th>Sensors</th><th>Critical location to keep</th><th>Average vs polyhouse</th><th>Typical error</th><th>Members</th></tr></thead><tbody>'+rows.join('')+'</tbody>';
+}
+$('k').addEventListener('input',function(e){st.k=+e.target.value;render()});
+$('pre').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;st.k=b.id==='best'?bestK(st.m==='T'?CT:CR):+b.dataset.k;render()});
+$('seg').addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;st.m=b.dataset.m;st.tg=st.m==='T'?.2:.8;$('tg').value=st.tg;Array.prototype.forEach.call($('seg').children,function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});render()});
+$('tg').addEventListener('input',function(e){var v=parseFloat(e.target.value);if(v>0){st.tg=v;render()}});
+$('cs').addEventListener('input',function(e){var v=parseFloat(e.target.value);st.cost=isNaN(v)?0:Math.max(0,v);render()});
+var root=document.documentElement;try{var th=localStorage.getItem('theme');if(th)root.setAttribute('data-theme',th)}catch(e){}
+$('tb').addEventListener('click',function(){var c=root.getAttribute('data-theme'),dk=c?c==='dark':matchMedia('(prefers-color-scheme: dark)').matches,nn=dk?'light':'dark';root.setAttribute('data-theme',nn);try{localStorage.setItem('theme',nn)}catch(e){}});
+render();
+})();
+</script>
+</body>
+</html>
