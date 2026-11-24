@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Farm F001 crop performance dashboard (sample data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f7;--surface:#fff;--ink:#16232a;--muted:#55666e;--line:#d3dde1;--accent:#00789a;--soft:#dcecf1;--c2:#c77a12;--c3:#6a63c9;--ok:#2e9e5b;--bad:#d64545;--warn:#8a6a1f;--warn-bg:#f3ead1;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--soft:#1c3640;--c2:#f2b45a;--c3:#9a94f0;--ok:#4ccc85;--bad:#ff6b6b;--warn:#e2c46e;--warn-bg:#2e2916}}
+:root[data-theme="dark"]{--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--soft:#1c3640;--c2:#f2b45a;--c3:#9a94f0;--ok:#4ccc85;--bad:#ff6b6b;--warn:#e2c46e;--warn-bg:#2e2916}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 "Instrument Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+button,select{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 18px 36px}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap;padding:22px 0 14px}
+h1{font-size:clamp(1.5rem,4.5vw,2.2rem)}
+.tag{display:inline-block;font-size:.74rem;border-radius:999px;padding:1px 10px;background:var(--warn-bg);color:var(--warn);margin-left:8px;vertical-align:middle}
+.sub{color:var(--muted);margin:5px 0 0;font-size:.9rem}
+select,.theme{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:.9rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+.panel h2{font-size:1.25rem}h3{font-size:.98rem;margin:0 0 6px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;border-radius:999px;padding:1px 10px;border:1px solid currentColor;white-space:nowrap}
+.chip::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.on{color:var(--ok)}.off{color:var(--bad)}
+.tw{overflow:auto;max-height:250px;margin-top:8px;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:.85rem;min-width:640px}
+th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--surface);color:var(--muted);font-weight:500}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--soft)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.facts div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.facts span{display:block;font-size:.76rem;color:var(--muted)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:14px}
+.tab{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:.88rem}
+.tab[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.bad{color:var(--bad)}
+.note{color:var(--muted);margin:3px 0 12px;font-size:.9rem}
+.big{display:inline-block;background:var(--soft);border-radius:10px;padding:8px 14px;margin-bottom:12px}
+.big b{font:700 1.5rem "Bricolage Grotesque",sans-serif;color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+.tile{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;text-align:left}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--soft)}
+.tile span{display:block;font-size:.76rem;color:var(--muted)}
+.tile b{display:block;font-size:1.2rem;margin-top:1px}
+.tile i{display:block;font-style:normal;font-size:.74rem;color:var(--muted)}
+.ch{font-size:.85rem;color:var(--muted);margin:10px 0 2px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.two{display:grid;grid-template-columns:1.5fr 1fr;gap:16px;align-items:start}
+.dn{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.dn svg{width:130px;flex:none}
+.dn ul{list-style:none;margin:0;padding:0;font-size:.84rem}.dn li::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;background:var(--cc)}
+.lg{font-size:.8rem;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap;margin:2px 0 6px}
+.lg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;background:var(--cc)}
+svg{width:100%;height:auto;display:block}svg text{fill:var(--muted);font-size:11px;font-family:"Instrument Sans",sans-serif}
+footer{margin-top:14px;color:var(--muted);font-size:.82rem}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Farm F001 crop performance<span class="tag">Sample data</span></h1>
+      <p class="sub" id="farm"></p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <label class="sub" style="margin:0">Polyhouse <select id="ph"></select></label>
+      <button class="theme" id="tb" type="button" aria-label="Switch light or dark theme">Theme</button>
+    </div>
+  </div>
+  <section class="panel" id="crop"></section>
+  <div class="tabs" id="cards" role="group" aria-label="KPI sections"></div>
+  <section class="panel" id="detail"></section>
+  <footer>All values are randomly generated for this demo and do not come from any company. Red marks show anomalies (a week that departs sharply from its neighbours) or readings outside the target range. Dotted lines show the expected trend for the crop at average conditions.</footer>
+</div>
+<script>
+(function(){
+var NW=30,IDS='ABCDEFGHIJKLMNOPQRST'.split(''),ASOF=Date.UTC(2026,10,20),DAY=864e5,S=Math.sin,TP=Math.PI*2,MO='Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+var CR={'TOM-OVA':{nm:'Tomato, oval',den:2.6,hs:10,pk:.62,hg:12.5,nd:1.4,fpc:5.2,fw:105,len:7.2,dia:5.2,ec:2.9,hc:.5,sd:28},
+'TOM-ROU':{nm:'Tomato, round',den:2.6,hs:10,pk:.58,hg:12.2,nd:1.4,fpc:4.6,fw:120,len:5.2,dia:6.2,ec:2.9,hc:.5,sd:28},
+'BEL-YEL':{nm:'Bell pepper, yellow',den:3,hs:12,pk:.25,hg:6.2,nd:1,fpc:1.6,fw:195,len:9.5,dia:8,ec:2.3,hc:.38,sd:35},
+'BEL-RED':{nm:'Bell pepper, red',den:3,hs:13,pk:.24,hg:6,nd:1,fpc:1.5,fw:200,len:9.5,dia:7.8,ec:2.3,hc:.35,sd:35}};
+var CROPS='TOM-OVA,TOM-OVA,TOM-OVA,TOM-OVA,TOM-OVA,TOM-OVA,TOM-OVA,TOM-OVA,TOM-ROU,TOM-ROU,TOM-ROU,BEL-YEL,BEL-YEL,BEL-YEL,BEL-YEL,BEL-YEL,BEL-RED,BEL-RED,BEL-RED,BEL-RED'.split(','),DONE={D:1,I:1,M:1,R:1},
+VARS={A:[['TO-0001',1]],B:[['TO-0001',1]],C:[['TO-0001',1]],D:[['TO-0001',1]],E:[['TO-0001',1]],F:[['TO-0001',1]],G:[['TO-0002',1]],H:[['TO-0001',.4],['TO-0002',.35],['TO-0004',.25]],I:[['TO-0003',1]],J:[['TO-0003',1]],K:[['TO-0003',1]],L:[['YC-0001',1]],M:[['YC-0001',1]],N:[['YC-0001',1]],O:[['YC-0001',1]],P:[['YC-0001',.55],['YC-0002',.45]],Q:[['RC-0001',1]],R:[['RC-0001',1]],S:[['RC-0001',.4],['RC-0002',.35],['RC-0003',.25]],T:[['RC-0001',1]]};
+var KEYS='h,nd,fpc,hc,yq,ypp,yx,kg,cum,ga,gb,gc,gd,fw,len,dia,col,wat,ec,ph,dr,cyc,pest,dis,rem,spr,dt,nt,rh,wb,tsr,comp,wk,md,hg'.split(',');
+var DEC={h:0,nd:1,fpc:1,hc:1,yq:2,ypp:2,yx:3,kg:0,cum:0,ga:1,gb:1,gc:1,gd:1,fw:0,len:1,dia:1,col:1,wat:2,ec:2,ph:2,dr:0,cyc:0,pest:1,dis:1,rem:0,spr:0,dt:1,nt:1,rh:0,wb:1,tsr:1,comp:0,wk:0,md:0,hg:1};
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function fd(t){var d=new Date(t);return('0'+d.getUTCDate()).slice(-2)+' '+MO[d.getUTCMonth()]+' '+d.getUTCFullYear()}
+var P=IDS.map(function(id,i){var r=rng(101+i*13),c=CR[CROPS[i]],dn=!!DONE[id],n=dn?NW:6+Math.floor(r()*23),back=dn?NW+6+Math.floor(r()*12):n,dot=ASOF-(back-1)*7*DAY;
+ return{id:id,crop:CROPS[i],dn:dn,n:n,dot:dot,dos:dot-c.sd*DAY,dor:dot+NW*7*DAY,pl:Math.round(4000*c.den*(.97+r()*.04)/10)*10}});
+var PM={},D={},AS={};P.forEach(function(q){PM[q.id]=q;q.vs=VARS[q.id].map(function(v){return[v[0],Math.round(q.pl*v[1]/10)*10]});q.trial=q.vs.length>1});
+function vtxt(q,withN){return q.vs.map(function(v){return v[0]+(withN&&q.trial?' ('+fN(v[1],0)+')':'')}).join(', ')}
+P.forEach(function(p,i){
+ var r=rng(7+i*31),n=function(){return r()*2-1},z=function(v,pr){return r()<pr?v*(1+(r()<.5?-1:1)*(.22+r()*.2)):v},c=CR[p.crop],f=.94+r()*.12,o={},h=18,nd=6,hc=0,cum=0,tl=[];
+ KEYS.forEach(function(k){o[k]=[]});
+ for(var w=1;w<=NW;w++){
+  if(w>p.n){KEYS.forEach(function(k){o[k].push(null)});continue}
+  var t=p.dot+(w-1)*7*DAY,dd=new Date(t),doy=Math.floor((t-Date.UTC(dd.getUTCFullYear(),0,0))/DAY),hv=w>=c.hs;
+  var tsr=16+5.5*S(TP*(doy-80)/365)+n()*1.3,dt=26+4*S(TP*(doy-100)/365)+n()*1.3,nt=17+6*S(TP*(doy-100)/365)+n()*1.1,rh=70-7*S(TP*(doy-60)/365)+n()*4.5;
+  tl.push(tsr);var tl2=tl[Math.max(0,tl.length-3)];
+  var gain=c.hg*f*(1+.04*(tsr-15))*(1-.012*Math.max(0,w-24))+n(),fpc=w<4?0:c.fpc*(1-.006*Math.max(0,w-20))+n()*c.fpc*.05;
+  h+=gain;nd+=c.nd*(1+.02*(dt-25))+n()*.15;if(hv)hc+=c.hc*(1+n()*.1);
+  var base=c.pk*Math.min(1,(w-c.hs+1)/7)*(1-.02*Math.max(0,w-22))*f,ypp=hv?z(base*(1+.035*(tl2-15))*(1+n()*.05),.04):0,kg=ypp*p.pl;cum+=kg;
+  var dis=z(Math.max(0,1+1.2*Math.max(0,S((w-3)/4))+.06*Math.max(0,rh-75)+n()*.3),.05),pest=z(Math.max(0,2+1.6*Math.max(0,S(w/3+i))+n()*.5),.05);
+  var ga=72+n()*2.5-.25*Math.max(0,w-24)-dis*.8,gc=7+n()*1.1,gd=2.5+dis*.7+n()*.5,gb=100-ga-gc-gd,sz=1-.06*S(TP*(doy-100)/365)+n()*.02,wk=Math.round(7*f+n()*.8);
+  var v={h:h,nd:nd,fpc:fpc,hc:hv?hc:0,yq:ypp*c.den,ypp:ypp,yx:hv?ypp/base:null,kg:kg,cum:cum,ga:hv?ga:null,gb:hv?gb:null,gc:hv?gc:null,gd:hv?gd:null,
+   fw:hv?z(c.fw*sz,.04):null,len:hv?c.len*Math.cbrt(sz):null,dia:hv?c.dia*Math.cbrt(sz):null,col:hv?4.1+n()*.25:null,
+   wat:z(Math.min(2.2,.25+.075*w)*(c.den>2.8?.8:1)*Math.max(.6,.75+.05*(dt-20)),.04),ec:c.ec+.008*w+n()*.08,ph:5.9+n()*.12+(r()<.03?(r()<.5?-.7:.7):0),dr:z(28+n()*3,.04),cyc:Math.min(16,5+w/2.3+(dt-24)*.3)+n()*.4,
+   pest:pest,dis:dis,rem:Math.max(0,Math.round(p.pl/1000*(.4+dis*.4)+n()*1.5)),spr:Math.max(0,Math.round(1.5+pest/3+n()*.7)),
+   dt:dt,nt:nt,rh:rh,wb:dt-(100-rh)/5+n()*.3,tsr:tsr,comp:Math.min(100,z(93+n()*3,.04)),wk:wk,md:Math.round(wk*5.6+n()*2),hg:gain};
+  KEYS.forEach(function(k){o[k].push(v[k]==null?null:+v[k].toFixed(DEC[k]))});
+ }
+ D[p.id]=o;
+});
+KEYS.forEach(function(k){AS[k]=[];for(var w=0;w<NW;w++){var s=0,c=0;P.forEach(function(q){var v=D[q.id][k][w];if(v!=null){s+=v;c++}});AS[k].push(c?+(s/c).toFixed(DEC[k]):null)}});
+var TH={dt:{lo:18,hi:28},rh:{lo:60,hi:80},nt:{lo:13},ph:{lo:5.5,hi:6.5}};
+function EXP(k,c,w){
+ var hv=w>=c.hs,y=hv?c.pk*Math.min(1,(w-c.hs+1)/7)*(1-.02*Math.max(0,w-22)):0,d=1+1.2*Math.max(0,S((w-3)/4)),i,a;
+ switch(k){
+ case'h':a=18;for(i=1;i<=w;i++)a+=c.hg*1.04*(1-.012*Math.max(0,i-24));return a;
+ case'hg':return c.hg*1.04*(1-.012*Math.max(0,w-24));
+ case'nd':return 6+c.nd*w;
+ case'fpc':return w<4?0:c.fpc*(1-.006*Math.max(0,w-20));
+ case'hc':return hv?c.hc*(w-c.hs+1):0;
+ case'ypp':return y;case'yq':return y*c.den;case'kg':return y*4000*c.den;
+ case'cum':a=0;for(i=c.hs;i<=w;i++)a+=EXP('kg',c,i);return a;
+ case'ga':return hv?72-.25*Math.max(0,w-24)-d*.8:null;
+ case'gc':return hv?7:null;
+ case'gd':return hv?2.5+d*.7:null;
+ case'gb':return hv?100-EXP('ga',c,w)-7-EXP('gd',c,w):null;
+ case'fw':return hv?c.fw:null;case'len':return hv?c.len:null;case'dia':return hv?c.dia:null;case'col':return hv?4.1:null;
+ case'wat':return Math.min(2.2,.25+.075*w)*(c.den>2.8?.8:1)*1.05;
+ case'ec':return c.ec+.008*w;case'ph':return 5.9;case'dr':return 28;case'cyc':return Math.min(16,5+w/2.3+.6);
+ case'pest':return 2.5;case'dis':return d;case'rem':return 4*c.den*(.4+d*.4);case'spr':return 2.3;
+ case'dt':return 26;case'nt':return 17;case'rh':return 70;case'wb':return 20;case'tsr':return 16;
+ case'comp':return 93;case'wk':return 7;case'md':return 39;
+ }
+ return null;
+}
+var CL={dt:1,nt:1,rh:1,wb:1,tsr:1};
+function seas(k,t){var d=new Date(t),doy=Math.floor((t-Date.UTC(d.getUTCFullYear(),0,0))/DAY);
+ if(k==='dt')return 26+4*S(TP*(doy-100)/365);if(k==='nt')return 17+6*S(TP*(doy-100)/365);
+ var rh=70-7*S(TP*(doy-60)/365);if(k==='rh')return rh;if(k==='wb')return seas('dt',t)-(100-rh)/5;return 16+5.5*S(TP*(doy-80)/365)}
+function climExp(k,q){var a=D[q.id][k],o=[],ma=[],i,j,s,c;
+ for(i=0;i<q.n;i++){s=0;c=0;for(j=Math.max(0,i-2);j<=i;j++)if(a[j]!=null){s+=a[j];c++}ma.push(s/c);o.push(ma[i])}
+ var off=ma[q.n-1]-seas(k,q.dot+(q.n-1)*7*DAY);
+ for(i=q.n;i<NW;i++)o.push(seas(k,q.dot+i*7*DAY)+off*Math.pow(.8,i-q.n+1));
+ return o}
+function cropAvg(k){var c=PM[st.ph].crop,o=[];for(var w=0;w<NW;w++){var s=0,n=0;P.forEach(function(q){var v=D[q.id][k][w];if(q.crop===c&&v!=null){s+=v;n++}});o.push(n?+(s/n).toFixed(DEC[k]):null)}return o}
+function expS(k){if(st.ph!=='all'&&CL[k])return climExp(k,PM[st.ph]);var o=[];for(var w=1;w<=NW;w++){if(st.ph!=='all'){o.push(EXP(k,CR[PM[st.ph].crop],w));continue}var s=0,c=0;P.forEach(function(q){if(q.n>=w){var v=EXP(k,CR[q.crop],w);if(v!=null){s+=v;c++}}});o.push(c?s/c:null)}return o}
+var KP=[
+{n:'Growth',note:'Vegetative growth (height, nodes) and reproductive growth (fruits per cluster, clusters harvested per plant).',c:[0,1,2,3],m:[['h','Plant height','cm',0,'m'],['nd','Nodes per plant','',1,'m'],['fpc','Fruits per cluster','',1,'m'],['hc','Harvested clusters per plant','',1,'m']]},
+{n:'Production',note:'Weekly yield, cycle total, and grade distribution (A to D) of harvested produce.',c:[0,2,4],m:[['yq','Yield per m²','kg',2,'m'],['kg','Weekly production','kg',0,'s','b'],['cum','Cycle total','kg',0,'c'],['ypp','Yield per plant','kg',2,'m'],['ga','Grade A','%',1,'m'],['gb','Grade B','%',1,'m'],['gc','Grade C','%',1,'m'],['gd','Grade D','%',1,'m']]},
+{n:'Quality',note:'Fruit weight and size, measured at harvest, for the crop in each polyhouse.',c:[0,1,2],m:[['fw','Average fruit weight','g',0,'m'],['len','Fruit length','cm',1,'m'],['dia','Fruit diameter','cm',1,'m'],['col','Colour score','/5',1,'m']]},
+{n:'Nutrition',note:'Water and feed given, and what drains back: volume, EC, pH and irrigation cycles. Target pH is 5.5 to 6.5.',c:[0,1,3],m:[['wat','Water per plant per day','L',2,'m'],['ec','Irrigation EC','mS/cm',2,'m'],['ph','Irrigation pH','',2,'m'],['dr','Drain','%',0,'m'],['cyc','Irrigation cycles per day','',0,'m']]},
+{n:'Crop protection',note:'Pest and disease incidence, spray activity, and plants removed with the reasons for removal.',c:[0,1,2],m:[['pest','Pest incidence','%',1,'m'],['dis','Disease incidence','%',1,'m'],['rem','Plants removed','plants',0,'s','b'],['spr','Sprays done','',0,'m','b']]},
+{n:'Climate',note:'Targets: day temperature 18 to 28 °C, relative humidity 60 to 80%, night temperature at least 13 °C. Values outside the range are flagged red. The dotted line is a 3-week moving average of the readings, continued as a seasonal forecast for the upcoming weeks.',c:[0,1,2],m:[['dt','Day temperature','°C',1,'m'],['nt','Night temperature','°C',1,'m'],['rh','Relative humidity','%',0,'m'],['wb','Wet-bulb temperature','°C',1,'m'],['tsr','Total solar radiation','MJ/m²',1,'m']]},
+{n:'Manpower',note:'Workers present, mandays, and the share of planned work completed.',c:[0,1,2],m:[['comp','Work completed','%',0,'m'],['wk','Workers present','',0,'s','b'],['md','Mandays per week','',0,'s','b']]},
+{n:'Growth, light and yield',note:'How weekly height gain and yield follow solar radiation. Lines are scaled 0 to 100 so they can share one axis.',c:[0,1,2],m:[['tsr','Total solar radiation','MJ/m²',1,'m'],['hg','Height gain per week','cm',1,'m'],['yq','Yield per m²','kg',2,'m']]}
+];
+var st={k:0,m:0,ph:P.filter(function(q){return!q.dn}).sort(function(a,b){return b.n-a.n})[0].id};
+function $(i){return document.getElementById(i)}
+function fN(v,d){return v==null?'–':v.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function u0(u){return u?(u.charAt(0)==='%'?u:' '+u):''}
+function sum(a){return a.reduce(function(x,y){return x+y},0)}
+function ser(k){return st.ph==='all'?AS[k]:D[st.ph][k]}
+function lp(k,agg){
+ var s=st.ph==='all'?(agg==='c'?P:P.filter(function(q){return!q.dn})):[PM[st.ph]],c=[],p=[];
+ s.forEach(function(q){var a=D[q.id][k],i=q.n-1,cv=a[i],pv=i?a[i-1]:cv;if(cv==null)return;if(pv==null||(agg==='c'&&q.dn))pv=cv;c.push(cv);p.push(pv)});
+ if(!c.length)return[null,null];
+ var f=agg==='m'?function(x){return sum(x)/x.length}:sum;return[f(c),f(p)];
+}
+function out(k,v){var t=TH[k];return t&&v!=null&&((t.lo!=null&&v<t.lo)||(t.hi!=null&&v>t.hi))}
+function anom(a,th){
+ var o=[],res=[],i;
+ if(th){a.forEach(function(v,i){if(v!=null&&((th.lo!=null&&v<th.lo)||(th.hi!=null&&v>th.hi)))o.push(i)});return o}
+ for(i=1;i<a.length-1;i++)if(a[i]!=null&&a[i-1]!=null&&a[i+1]!=null)res[i]=a[i]-(a[i-1]+a[i+1])/2;
+ var vs=res.filter(function(x){return x!=null}),sd=Math.sqrt(sum(vs.map(function(x){return x*x}))/(vs.length||1));
+ res.forEach(function(x,i){if(x!=null&&sd&&Math.abs(x)>2.6*sd)o.push(i)});return o;
+}
+function chart(a,o){
+ var w=640,h=235,l=48,r=10,t=12,bt=26,n=a.length,bar=o.type==='b',ss=o.multi||[{a:a,c:'var(--accent)'}],all=[];
+ ss.forEach(function(s){s.a.forEach(function(v){if(v!=null)all.push(v)});(s.e||[]).forEach(function(v){if(v!=null)all.push(v)})});
+ if(o.avg)o.avg.forEach(function(v){if(v!=null)all.push(v)});
+ if(o.exp)o.exp.forEach(function(v){if(v!=null)all.push(v)});
+ var th=o.th;if(th){if(th.lo!=null)all.push(th.lo);if(th.hi!=null)all.push(th.hi)}
+ var mn=Math.min.apply(null,all),mx=Math.max.apply(null,all);if(bar)mn=Math.min(0,mn);var pd=(mx-mn||1)*.1;mx+=pd;if(!bar)mn-=pd;
+ function X(i){return bar?l+(i+.5)*(w-l-r)/n:l+i*(w-l-r)/(n-1)}function Y(v){return t+(mx-v)*(h-t-bt)/(mx-mn)}
+ function P2(s){var d='',pv=false;s.forEach(function(v,i){if(v==null){pv=false;return}d+=(pv?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);pv=true});return d}
+ var dec=(mx-mn)>20?0:(mx-mn)>2?1:2,s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+(o.lab||'Chart')+'">';
+ if(th){var y1=Y(th.hi!=null?th.hi:mx),y2=Y(th.lo!=null?th.lo:mn);s+='<rect x="'+l+'" y="'+y1+'" width="'+(w-l-r)+'" height="'+(y2-y1)+'" fill="var(--ok)" opacity=".1"/>';
+  [th.lo,th.hi].forEach(function(v){if(v!=null)s+='<line x1="'+l+'" x2="'+(w-r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--bad)" stroke-dasharray="4 4" opacity=".7"/>'})}
+ for(var g=0;g<=4;g++){var v=mn+(mx-mn)*g/4,y=Y(v);s+='<line x1="'+l+'" x2="'+(w-r)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)"/><text x="'+(l-6)+'" y="'+(y+4)+'" text-anchor="end">'+v.toFixed(dec)+'</text>'}
+ var step=Math.ceil(n/8);for(var i=0;i<n;i+=step)s+='<text x="'+X(i)+'" y="'+(h-7)+'" text-anchor="middle">'+(o.xl?o.xl[i]:'W'+(i+1))+'</text>';
+ if(o.now!=null&&o.now<n-1){var xn=X(o.now);s+='<rect x="'+xn+'" y="'+t+'" width="'+(w-r-xn)+'" height="'+(h-t-bt)+'" fill="var(--soft)" opacity=".55"/><line x1="'+xn+'" x2="'+xn+'" y1="'+t+'" y2="'+(h-bt)+'" stroke="var(--muted)" stroke-dasharray="3 3"/><text x="'+(xn+6)+'" y="'+(t+11)+'">Upcoming weeks: expected only</text>'}
+ if(o.exp)s+='<path d="'+P2(o.exp)+'" fill="none" stroke="var(--ink)" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round" opacity=".75"/>';
+ if(o.avg)s+='<path d="'+P2(o.avg)+'" fill="none" stroke="var(--c2)" stroke-width="2" stroke-dasharray="5 4"/>';
+ var an=o.multi?[]:anom(a,th);
+ if(bar){var bw=(w-l-r)/n*.7;a.forEach(function(v,i){if(v!=null)s+='<rect x="'+(X(i)-bw/2)+'" y="'+Y(Math.max(v,0))+'" width="'+bw+'" height="'+Math.abs(Y(0)-Y(v))+'" rx="2" fill="'+(an.indexOf(i)>=0?'var(--bad)':'var(--accent)')+'"><title>'+(o.xl?o.xl[i]:'Week '+(i+1))+': '+fN(v,o.d)+u0(o.u)+'</title></rect>'})}
+ else{ss.forEach(function(q){if(q.e)s+='<path d="'+P2(q.e)+'" fill="none" stroke="'+q.c+'" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/>';s+='<path d="'+P2(q.a)+'" fill="none" stroke="'+q.c+'" stroke-width="2.4" stroke-linejoin="round"/>'});
+  if(!o.multi){a.forEach(function(v,i){if(v!=null)s+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="2.6" fill="var(--accent)"><title>Week '+(i+1)+': '+fN(v,o.d)+u0(o.u)+'</title></circle>'});
+   an.forEach(function(i){s+='<circle cx="'+X(i)+'" cy="'+Y(a[i])+'" r="6" fill="none" stroke="var(--bad)" stroke-width="2"/><circle cx="'+X(i)+'" cy="'+Y(a[i])+'" r="3" fill="var(--bad)"/>'})}}
+ return{svg:s+'</svg>',na:an.length};
+}
+function stack(sr,ex){
+ var w=640,h=210,l=40,r=10,t=8,bt=24,c=['var(--accent)','var(--c2)','var(--c3)','var(--bad)'],i0=sr[0].findIndex(function(v){return v!=null}),i1=0;
+ sr[0].forEach(function(v,i){if(v!=null)i1=i});
+ var m=i1-i0+1,ext=ex&&i1<NW-1&&ex[0][i1+1]!=null?1:0;function X(i){return l+i*(w-l-r)/(m+ext-1)}function Y(v){return t+(100-v)*(h-t-bt)/100}
+ var s='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Grade distribution trend">',base=[];
+ for(var i=0;i<m;i++)base.push(0);
+ [0,50,100].forEach(function(v){s+='<line x1="'+l+'" x2="'+(w-r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(l-6)+'" y="'+(Y(v)+4)+'" text-anchor="end">'+v+'%</text>'});
+ sr.forEach(function(a,j){var top=base.map(function(b,i){return b+a[i0+i]}),d='';
+  top.forEach(function(v,i){d+=(i?'L':'M')+X(i)+' '+Y(v)});for(var i=m-1;i>=0;i--)d+='L'+X(i)+' '+Y(base[i]);
+  s+='<path d="'+d+'Z" fill="'+c[j]+'" opacity=".85"><title>Grade '+'ABCD'[j]+'</title></path>';base=top});
+ if(ex)for(var j=0;j<3;j++){var d2='';for(var i=0;i<m+ext;i++){var cv=0;for(var q=0;q<=j;q++)cv+=ex[q][i0+i]||0;d2+=(i?'L':'M')+X(i)+' '+Y(cv)}s+='<path d="'+d2+'" fill="none" stroke="var(--ink)" stroke-width="1.8" stroke-dasharray="1 5" stroke-linecap="round" opacity=".85"/>'}
+ for(var i=0;i<m;i+=Math.ceil(m/8))s+='<text x="'+X(i)+'" y="'+(h-6)+'" text-anchor="middle">W'+(i0+i+1)+'</text>';
+ return s+'</svg>';
+}
+function donut(it,ctr){
+ var T=sum(it.map(function(x){return x.v}))||1,C=2*Math.PI*40,off=0,s='<svg viewBox="0 0 120 120" role="img" aria-label="Share chart">',l='';
+ it.forEach(function(x){var L=C*x.v/T;s+='<circle cx="60" cy="60" r="40" fill="none" stroke="'+x.c+'" stroke-width="18" stroke-dasharray="'+L+' '+(C-L)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 60 60)"/>';off+=L;l+='<li style="--cc:'+x.c+'">'+x.l+' '+(x.v/T*100).toFixed(0)+'%</li>'});
+ s+='<text x="60" y="58" text-anchor="middle" style="font-size:13px;font-weight:700;fill:var(--ink)">'+ctr[0]+'</text><text x="60" y="72" text-anchor="middle">'+ctr[1]+'</text></svg>';
+ return'<div class="dn">'+s+'<ul>'+l+'</ul></div>';
+}
+function heat(k,m){
+ var cr=st.ph==='all'?Object.keys(CR):[PM[st.ph].crop],cw=19,ch=14,l=30,B=['#440154','#3b528b','#21918c','#5ec962','#fde725'],hx=function(h,j){return parseInt(h.substr(1+j*2,2),16)},y=0,
+ s='<defs><linearGradient id="hg">'+B.map(function(c,i){return'<stop offset="'+i*25+'%" stop-color="'+c+'"/>'}).join('')+'</linearGradient></defs>';
+ cr.forEach(function(cc){
+  var rows=P.filter(function(q){return q.crop===cc}),vs=[];
+  rows.forEach(function(q){D[q.id][k].forEach(function(v){if(v!=null)vs.push(v)})});
+  if(!vs.length)return;
+  var mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs),col=function(v){var x=(v-mn)/((mx-mn)||1)*4,i=Math.min(3,Math.floor(x)),f=x-i;return'rgb('+[0,1,2].map(function(j){return Math.round(hx(B[i],j)+(hx(B[i+1],j)-hx(B[i],j))*f)}).join(',')+')'};
+  s+='<text x="'+l+'" y="'+(y+11)+'" style="fill:var(--ink);font-weight:700">'+cc+' · '+CR[cc].nm+'</text><text x="'+(l+NW*cw)+'" y="'+(y+11)+'" text-anchor="end">'+fN(mn,m[3])+' to '+fN(mx,m[3])+u0(m[2])+'</text>';
+  y+=18;
+  rows.forEach(function(q){
+   s+='<text x="'+(l-8)+'" y="'+(y+10)+'" text-anchor="end" style="fill:var(--ink);font-weight:'+(q.id===st.ph?700:400)+'">'+q.id+'</text>';
+   D[q.id][k].forEach(function(v,c){var p='x="'+(l+c*cw)+'" y="'+y+'" width="'+(cw-1)+'" height="'+(ch-1)+'" rx="2"';s+=v==null?'<rect '+p+' fill="var(--line)" opacity=".4"/>':'<rect '+p+' fill="'+col(v)+'"><title>Polyhouse '+q.id+', week '+(c+1)+': '+fN(v,m[3])+u0(m[2])+'</title></rect>'});
+   if(q.id===st.ph)s+='<rect x="'+(l-2)+'" y="'+(y-2)+'" width="'+(NW*cw+3)+'" height="'+(ch+2)+'" rx="3" fill="none" stroke="var(--ink)" stroke-width="2"/>';
+   y+=ch;
+  });
+  y+=8;
+ });
+ for(var c=0;c<NW;c+=5)s+='<text x="'+(l+c*cw+cw/2)+'" y="'+(y+10)+'" text-anchor="middle">W'+(c+1)+'</text>';
+ s+='<rect x="'+l+'" y="'+(y+22)+'" width="200" height="9" rx="3" fill="url(#hg)"/><text x="'+l+'" y="'+(y+44)+'">Low in crop</text><text x="'+(l+200)+'" y="'+(y+44)+'" text-anchor="end">High in crop</text><rect x="'+(l+240)+'" y="'+(y+22)+'" width="14" height="9" rx="2" fill="var(--line)" opacity=".4"/><text x="'+(l+260)+'" y="'+(y+31)+'">No data yet</text>';
+ return'<svg viewBox="0 0 '+(l+NW*cw+4)+' '+(y+50)+'" role="img" aria-label="Heatmap by polyhouse and week, grouped by crop">'+s+'</svg>';
+}
+function pear(x,y){var n=x.length;if(n<4)return null;var mx=sum(x)/n,my=sum(y)/n,a=0,b=0,c=0;for(var i=0;i<n;i++){a+=(x[i]-mx)*(y[i]-my);b+=Math.pow(x[i]-mx,2);c+=Math.pow(y[i]-my,2)}return a/Math.sqrt(b*c)}
+function cor(set,kx,ky,lag){var x=[],y=[];set.forEach(function(q){var a=D[q.id][kx],b=D[q.id][ky];for(var i=0;i+lag<q.n;i++)if(a[i]!=null&&b[i+lag]!=null){x.push(a[i]);y.push(b[i+lag])}});return pear(x,y)}
+function norm2(a,e){var v=a.filter(function(x){return x!=null});if(!v.length)return{a:a.map(function(){return null}),e:e.map(function(){return null})};var mn=Math.min.apply(null,v),mx=Math.max.apply(null,v),f=function(x){return x==null?null:(x-mn)/((mx-mn)||1)*100};return{a:a.map(f),e:e.map(f)}}
+function norm(a){var v=a.filter(function(x){return x!=null}),mn=Math.min.apply(null,v),mx=Math.max.apply(null,v);return a.map(function(x){return x==null?null:(x-mn)/((mx-mn)||1)*100})}
+function chip(q){return q.dn?'<span class="chip off">Completed · DOR '+fd(q.dor)+'</span>':'<span class="chip on">Running · Week '+q.n+'</span>'}
+function cropPanel(){
+ var q=PM[st.ph],run=P.filter(function(x){return!x.dn}).length;
+ $('farm').textContent='Farm F001 · '+P.length+' polyhouses · '+run+' running, '+(P.length-run)+' completed · data as of '+fd(ASOF);
+ var c=CR[q.crop],F='<h2>Polyhouse '+q.id+' '+chip(q)+'</h2><div class="facts"><div><span>Crop</span>'+q.crop+' · '+c.nm+'</div><div><span>'+(q.trial?'Varieties (trial polyhouse)':'Variety')+'</span>'+vtxt(q,1)+'</div><div><span>DOS (sowing)</span>'+fd(q.dos)+'</div><div><span>DOT (transplant)</span>'+fd(q.dot)+'</div><div><span>Plants transplanted</span>'+fN(q.pl,0)+'</div>'+(q.dn?'<div><span>DOR (crop removal)</span>'+fd(q.dor)+'</div>':'<div><span>Crop age</span>'+q.n+' weeks</div>')+'</div>';
+ $('crop').innerHTML=F+'<h3 style="margin-top:14px">All polyhouses in Farm F001</h3><p class="note" style="margin-bottom:0">Click a row to open that polyhouse. Green is a running crop, red is a completed crop. Each polyhouse grows one crop, usually one variety. Trial polyhouses grow several varieties, with plant counts in brackets.</p><div class="tw"><table><thead><tr><th>Polyhouse</th><th>Crop code</th><th>Crop</th><th>Variety code</th><th>DOS</th><th>DOT</th><th>Plants</th><th>Status</th><th>DOR</th></tr></thead><tbody>'+P.map(function(x){return'<tr data-p="'+x.id+'"'+(x.id===st.ph?' style="background:var(--soft)"':'')+'><td>'+x.id+'</td><td>'+x.crop+'</td><td>'+CR[x.crop].nm+'</td><td>'+vtxt(x,1)+(x.trial?' <small style="color:var(--warn)">trial</small>':'')+'</td><td>'+fd(x.dos)+'</td><td>'+fd(x.dot)+'</td><td>'+fN(x.pl,0)+'</td><td>'+chip(x)+'</td><td>'+(x.dn?fd(x.dor):'–')+'</td></tr>'}).join('')+'</tbody></table></div>';
+}
+function cards(){
+ $('cards').innerHTML=KP.map(function(K,i){return'<button type="button" class="tab" data-k="'+i+'" aria-pressed="'+(i===st.k)+'">'+K.n+'</button>'}).join('');
+}
+function detail(){
+ var K=KP[st.k],m=K.m[st.m],k=m[0],a=ser(k),all=st.ph==='all',set=all?P:[PM[st.ph]],H='<h2>'+K.n+'</h2><p class="note">'+K.note+'</p>';
+ if(st.k===1){var tot=sum(set.map(function(q){return D[q.id].cum[q.n-1]}));H+='<div class="big">Total production this crop cycle<br><b>'+fN(tot,0)+' kg</b>'+(all?' across all polyhouses':'')+'</div>'}
+ H+='<div class="tiles">'+K.m.map(function(x,j){var v=lp(x[0],x[4]),d=v[0]==null?null:+v[0].toFixed(x[3])-+v[1].toFixed(x[3]),tot=all&&x[4]!=='m'?' (farm total)':'';return'<button type="button" class="tile" data-m="'+j+'" aria-pressed="'+(j===st.m)+'"><span>'+x[1]+tot+'</span><b class="'+(out(x[0],v[0])?'bad':'')+'">'+fN(v[0],x[3])+u0(x[2])+'</b><i>'+(d==null?'':Math.abs(d)<1e-9?'No change vs prev. week':(d>0?'+':'−')+fN(Math.abs(d),x[3])+u0(x[2])+' vs prev. week')+'</i></button>'}).join('')+'</div>';
+ if(st.k===7){
+  var tr=set.length?1:0,ss=[['tsr','var(--accent)'],['hg','var(--c2)'],['yq','var(--c3)']].map(function(x){var a2=ser(x[0]).map(function(v){return x[0]==='yq'&&!v?null:v}),r2=norm2(a2,expS(x[0]));return{a:r2.a,e:r2.e,c:x[1]}});
+  H+='<div class="ch"><span>Solar radiation, height gain and yield, scaled 0 to 100</span></div><div class="lg"><span><i style="--cc:var(--accent)"></i>Solar radiation</span><span><i style="--cc:var(--c2)"></i>Height gain</span><span><i style="--cc:var(--c3)"></i>Yield</span><span>Dotted lines: expected trend</span></div>'+chart(ss[0].a,{multi:ss,xl:null,lab:'Growth, light and yield trend',d:0}).svg;
+  var c1=cor(set,'tsr','hg',0),c2=cor(set,'tsr','yx',2);
+  H+='<p class="note" style="margin-top:8px">Height gain vs same-week radiation: r = '+fN(c1,2)+'. Yield against its expected curve, 2 weeks after the radiation reading: r = '+fN(c2,2)+'. Values near +1 mean the two move together.</p>';
+ }else{
+  var ch=chart(a,{type:m[5]||'l',th:TH[k],avg:cropAvg(k),exp:expS(k),now:PM[st.ph].dn?null:PM[st.ph].n-1,u:m[2],d:m[3],lab:m[1]+' trend'});
+  H+='<div class="ch"><span>'+m[1]+(m[2]?' ('+m[2]+')':'')+' by crop-cycle week, '+(all?'farm average per polyhouse':'polyhouse '+st.ph)+'</span><span>'+(ch.na?'<b class="bad">'+ch.na+' flagged</b>':'No anomalies')+'</span></div>'+'<div class="lg"><span><i style="--cc:var(--accent)"></i>'+'Polyhouse '+st.ph+' (selected)</span><span><i style="--cc:var(--c2)"></i>Average of polyhouses with the same crop (dashed)</span>'+'<span><i style="--cc:var(--ink);border-radius:50%;opacity:.75"></i>Expected trend (dotted)</span><span><i style="--cc:var(--bad)"></i>Anomaly or outside target</span>'+(PM[st.ph].dn?'':'<span>Next week (W'+(PM[st.ph].n+1)+') expected: <b>'+fN(expS(k)[PM[st.ph].n],m[3])+u0(m[2])+'</b></span>')+'</div>'+ch.svg;
+ }
+ if(st.k===1){
+  var gs=['ga','gb','gc','gd'].map(function(g){return ser(g)}),W=0,G=[0,0,0,0];
+  set.forEach(function(q){for(var i=0;i<q.n;i++){var kk=D[q.id].kg[i];if(kk>0){W+=kk;['ga','gb','gc','gd'].forEach(function(g,j){G[j]+=D[q.id][g][i]*kk/100})}}});
+  if(!(W>0))H+='<div class="msg" style="margin-top:12px">Harvest has not started in this polyhouse yet, so there are no grades to show.</div>';else H+='<div class="two" style="margin-top:12px"><div><div class="ch"><span>Grade distribution trend (A to D)</span></div><div class="lg"><span><i style="--cc:var(--accent)"></i>A</span><span><i style="--cc:var(--c2)"></i>B</span><span><i style="--cc:var(--c3)"></i>C</span><span><i style="--cc:var(--bad)"></i>D</span><span>Dotted lines: expected</span></div>'+stack(gs,['ga','gb','gc','gd'].map(expS))+'</div><div><div class="ch"><span>Grade share of cycle production</span></div>'+donut([{l:'A',v:G[0],c:'var(--accent)'},{l:'B',v:G[1],c:'var(--c2)'},{l:'C',v:G[2],c:'var(--c3)'},{l:'D',v:G[3],c:'var(--bad)'}],[fN(W/1000,1)+' t','graded'])+'</div></div>';
+ }
+ if(st.k===4){var tr2=sum(set.map(function(q){return sum(D[q.id].rem.slice(0,q.n))})),sh=[.4,.22,.2,.18];
+  H+='<div class="ch" style="margin-top:12px"><span>Reasons for plant removal, whole cycle</span></div>'+donut(['Disease','Pest','Mechanical damage','Weak plant'].map(function(l,j){return{l:l,v:sh[j]*tr2,c:['var(--bad)','var(--c2)','var(--c3)','var(--accent)'][j]}}),[fN(tr2,0),'removed']);}
+ H+='<div class="ch" style="margin-top:16px"><span>'+m[1]+(all?': every polyhouse, grouped by crop':': polyhouses growing '+CR[PM[st.ph].crop].nm.toLowerCase())+'</span><span>Compared within each crop: purple is low, yellow is high</span></div><div style="overflow-x:auto"><div style="min-width:560px">'+heat(k,m)+'</div></div>';
+ $('detail').innerHTML=H;
+}
+function all(){cropPanel();cards();detail()}
+$('ph').innerHTML=IDS.map(function(i){return'<option value="'+i+'">Polyhouse '+i+' · '+PM[i].crop+'</option>'}).join('');$('ph').value=st.ph;
+$('cards').addEventListener('click',function(e){var b=e.target.closest('[data-k]');if(b){st.k=+b.dataset.k;st.m=0;cards();detail()}});
+$('detail').addEventListener('click',function(e){var b=e.target.closest('[data-m]');if(b){st.m=+b.dataset.m;detail()}});
+$('crop').addEventListener('click',function(e){var b=e.target.closest('[data-p]');if(b){st.ph=b.dataset.p;$('ph').value=st.ph;all()}});
+$('ph').addEventListener('change',function(e){st.ph=e.target.value;all()});
+var root=document.documentElement;
+try{var t=localStorage.getItem('theme');if(t)root.setAttribute('data-theme',t)}catch(e){}
+$('tb').addEventListener('click',function(){var c=root.getAttribute('data-theme'),d=c?c==='dark':matchMedia('(prefers-color-scheme: dark)').matches,n=d?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}});
+all();
+})();
+</script>
+</body>
+</html>
