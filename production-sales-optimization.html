@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Production and sales optimization dashboard – Yasha Sharma</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f7;--surface:#fff;--ink:#16232a;--muted:#55666e;--line:#d3dde1;--accent:#00789a;--ai:#fff;--soft:#dcecf1;--bad:#c0392b;--ok:#2e8b57;--warn:#c27c0e;--prod:#d98a1d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--ai:#07202a;--soft:#1c3640;--bad:#ef6f61;--ok:#5cc88a;--warn:#e2c46e;--prod:#f0a93f}}
+*,*::before,*::after{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{margin:0;color:var(--ink);font:400 15px/1.55 "Instrument Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+.wrap{max-width:1560px;margin:0 auto;padding:0 clamp(16px,3.5vw,56px)}
+a{color:var(--accent);text-decoration:none;font-weight:500}
+.top{border-bottom:1px solid var(--line);padding:12px 0}.top .wrap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center}
+.tag{font-size:.76rem;border-radius:999px;padding:2px 10px;background:var(--soft);color:var(--accent)}
+.intro{padding:28px 0 6px}.intro h1{font-size:clamp(1.8rem,3.6vw,2.7rem)}.intro p{color:var(--muted);max-width:95ch;margin:8px 0 0}
+.ctl{display:flex;gap:18px 26px;flex-wrap:wrap;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:18px 0;position:sticky;top:0;z-index:4}
+.ctl label,.ctl .l{font-size:.78rem;color:var(--muted);margin-right:8px}
+select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font:inherit}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.seg button{background:var(--bg);color:var(--ink);border:0;border-right:1px solid var(--line);padding:6px 13px;font:inherit;cursor:pointer}.seg button:last-child{border:0}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--ai)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px}
+.kpi,.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;position:relative}
+.kpi b{display:block;font:700 1.7rem "Bricolage Grotesque",sans-serif}.kpi span{color:var(--muted);font-size:.82rem;display:block}.kpi small{font-size:.78rem;display:block;margin-top:2px}
+.g{display:grid;gap:14px;margin-top:14px}.g1{grid-template-columns:2fr 1fr}.g2{grid-template-columns:2fr 1fr}
+.card h2{font-size:1.1rem}.card p.s{margin:2px 0 10px;color:var(--muted);font-size:.86rem}
+svg{width:100%;height:auto;display:block}
+.leg{display:flex;gap:14px;font-size:.8rem;color:var(--muted);margin-top:6px;flex-wrap:wrap}.leg i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+#tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 24px rgba(0,0,0,.18);border-radius:10px;padding:8px 10px;font-size:.8rem;display:none;z-index:3;white-space:nowrap}
+.rec{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer;font-size:.88rem}.rec:last-child{border:0}
+.rec i{flex:none;width:8px;border-radius:4px;background:var(--ok)}.rec.bad i{background:var(--bad)}.rec.warn i{background:var(--warn)}.rec b{display:block}
+.ban{background:var(--soft);border-radius:10px;padding:10px 12px;font-size:.88rem;margin-bottom:8px}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:900px}
+th,td{padding:7px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th:first-child,td:first-child,th:last-child,td:last-child{text-align:left}th{color:var(--muted);font-weight:500;font-size:.76rem}
+tr[data-i]{cursor:pointer}tr[data-i]:hover,tr.on{background:var(--bg)}
+.chip{padding:1px 9px;border-radius:999px;font-size:.76rem;border:1px solid currentColor}.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+footer{padding:24px 0 40px;color:var(--muted);font-size:.84rem}
+@media(max-width:980px){.g1,.g2{grid-template-columns:1fr}.ctl{position:static}}
+</style></head><body>
+<header class="top"><div class="wrap"><a href="./">← Back to portfolio</a><span class="tag">Built with sample data</span></div></header>
+<main class="wrap">
+<section class="intro"><h1>Production and sales optimization dashboard</h1>
+<p>Daily tracking of demand, production and actual sales for 8 polyhouse products over 90 days. The dashboard flags every shortfall (demand not met) and every over-availability (stock piling up or expiring), turns them into rupee impact, and tests a demand-matched production plan against what was actually produced.</p></section>
+<section class="ctl">
+<div><label for="pr">Product</label><select id="pr"></select></div>
+<div><span class="l">Period</span><span class="seg" id="rg"><button data-r="7" aria-pressed="false">7 days</button><button data-r="14" aria-pressed="false">14 days</button><button data-r="30" aria-pressed="true">30 days</button><button data-r="90" aria-pressed="false">90 days</button></span></div>
+<div><span class="l">Production plan</span><span class="seg" id="md"><button data-m="0" aria-pressed="true">Current</button><button data-m="1" aria-pressed="false">Optimised</button></span></div>
+<div><label for="cv">Stock cover kept in optimised plan</label><select id="cv"><option value="0">0 days</option><option value=".5">0.5 day</option><option value="1" selected>1 day</option><option value="1.5">1.5 days</option><option value="2">2 days</option></select></div>
+</section>
+<section class="kpis" id="kpis"></section>
+<section class="g g1"><div class="card"><h2>Demand, production and actual sales, daily</h2><p class="s">Red shading is demand that was not met. Hover any day for the full picture.</p><div id="ch"></div><div id="tip"></div>
+<div class="leg"><span><i style="background:var(--accent)"></i>Demand</span><span><i style="background:var(--prod)"></i>Production</span><span><i style="background:var(--ok)"></i>Actual sales</span><span><i style="background:var(--bad);opacity:.4"></i>Shortfall</span></div></div>
+<div class="card"><h2>What to do next</h2><p class="s">Ranked by rupees at stake, based on current production. Click one to focus on it.</p><div class="ban" id="ban"></div><div id="rec"></div></div></section>
+<section class="g g2"><div class="card"><h2>Daily availability map</h2><p class="s">Each square is one product on one day. Click a product name to focus on it.</p><div id="hm"></div>
+<div class="leg"><span><i style="background:var(--bad)"></i>Shortfall</span><span><i style="background:var(--ok)"></i>Balanced</span><span><i style="background:var(--prod)"></i>Over-available</span></div></div>
+<div class="card"><h2>Weekday pattern</h2><p class="s">Average demand against production for each day of the week.</p><div id="wk"></div>
+<div class="leg"><span><i style="background:var(--accent)"></i>Demand</span><span><i style="background:var(--prod)"></i>Production</span></div></div></section>
+<section class="card" style="margin-top:14px"><h2>Product scorecard</h2><p class="s">Click a row to focus the dashboard on that product.</p><div class="tw"><table id="tb"></table></div></section>
+</main>
+<footer class="wrap">Sample data generated with a seeded random generator in JavaScript: 8 products, 90 days ending 22 Nov 2026, quantities in kg and values in rupees. Figures are illustrative, not company data.</footer>
+<script>
+(function(){
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var P=[{n:'Tomato',b:420,pr:32,sh:5,bias:-.10,wk:[.92,.92,.95,1,1.1,1.25,1.15]},{n:'Cherry tomato',b:160,pr:95,sh:4,bias:-.14,wk:[.85,.9,.95,1,1.2,1.4,1.2]},{n:'Cucumber',b:300,pr:28,sh:5,bias:.16,wk:[1,1,1,1,1.05,1.1,1.05]},{n:'Capsicum green',b:220,pr:60,sh:6,bias:.04,wk:[.95,.95,1,1,1.1,1.2,1.1]},{n:'Capsicum red',b:140,pr:110,sh:6,bias:-.08,wk:[.85,.9,.95,1,1.2,1.4,1.3]},{n:'Lettuce',b:180,pr:70,sh:3,bias:.20,wk:[.9,.9,.95,1,1.1,1.2,1]},{n:'Zucchini',b:150,pr:45,sh:4,bias:.02,wk:[1,1,1,1,1.05,1.1,1.05]},{n:'Strawberry',b:90,pr:220,sh:2,bias:-.18,wk:[.8,.85,.9,1,1.25,1.5,1.35]}];
+var N=P.length,DAYS=90,R=rng(11),D=[],PC=[],AV=[],DT=[],DW=[],SP=[],DN=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],t,i;
+function sum(a){return a.reduce(function(x,y){return x+y},0)}
+for(t=0;t<DAYS;t++){var dd=new Date(2026,10,22-(DAYS-1)+t);DT.push(dd);DW.push((dd.getDay()+6)%7);SP.push(R()<.05?1.3:1)}
+P.forEach(function(p){var d=[],c=[];for(t=0;t<DAYS;t++)d.push(Math.round(p.b*p.wk[DW[t]]*(1+.0012*t)*SP[t]*(1+(R()-.5)*.2)));var av=sum(d)/DAYS;AV.push(av);
+ for(t=0;t<DAYS;t++)c.push(Math.round(av*(1+p.bias)*(1+(R()-.5)*.16)*(R()<.04?.55:1)));D.push(d);PC.push(c)});
+var sel=-1,RANGE=30,MODE=0,COVER=1,SC,SO;
+function fc(i,t){var d=D[i],a=[];for(var j=t-7;j>=0&&a.length<4;j-=7)a.push(d[j]);if(a.length)return sum(a)/a.length;if(t>0)return sum(d.slice(0,t))/t;return AV[i]}
+function sim(i,m){var d=D[i],av=AV[i],st=av,o={pr:[],s:[],k:[],w:[]};
+ for(var t=0;t<DAYS;t++){var p=m==0?PC[i][t]:Math.round(Math.min(1.6*av,Math.max(0,fc(i,t)*(1+COVER)-st)));
+  var a=st+p,x=Math.min(d[t],a);st=a-x;var w=Math.max(0,st-P[i].sh*av);st-=w;o.pr.push(p);o.s.push(x);o.k.push(st);o.w.push(w)}return o}
+function ids(){if(sel>=0)return[sel];var a=[];for(var i=0;i<N;i++)a.push(i);return a}
+function agg(S,ix,t0){var o={d:[],p:[],s:[],k:[],w:[]};for(var t=t0;t<DAYS;t++){var a=0,b=0,c=0,e=0,f=0;ix.forEach(function(i){a+=D[i][t];b+=S[i].pr[t];c+=S[i].s[t];e+=S[i].k[t];f+=S[i].w[t]});o.d.push(a);o.p.push(b);o.s.push(c);o.k.push(e);o.w.push(f)}return o}
+function ps(S,i,t0){var r={dem:0,prod:0,sal:0,w:0};for(var t=t0;t<DAYS;t++){r.dem+=D[i][t];r.prod+=S[i].pr[t];r.sal+=S[i].s[t];r.w+=S[i].w[t]}r.short=r.dem-r.sal;r.fill=r.sal/r.dem*100;r.lost=r.short*P[i].pr;r.wc=r.w*P[i].pr;return r}
+function kp(S,ix,t0){var o=agg(S,ix,t0),k={o:o,dem:sum(o.d),prod:sum(o.p),sal:sum(o.s),w:sum(o.w),stock:o.k[o.k.length-1],lost:0,wc:0};k.fill=k.sal/k.dem*100;k.short=k.dem-k.sal;ix.forEach(function(i){var r=ps(S,i,t0);k.lost+=r.lost;k.wc+=r.wc});return k}
+function f0(x){return Math.round(x).toLocaleString('en-IN')}
+function inr(x){return x>=1e5?'₹'+(x/1e5).toFixed(2)+' L':'₹'+f0(x)}
+function dl(t){return DT[t].toLocaleDateString('en-GB',{day:'numeric',month:'short'})}
+function $(s){return document.getElementById(s)}
+var tipData=null;
+function render(){
+ SC=P.map(function(_,i){return sim(i,0)});SO=P.map(function(_,i){return sim(i,1)});
+ var S=MODE?SO:SC,ix=ids(),t0=DAYS-RANGE,k=kp(S,ix,t0),kc=kp(SC,ix,t0),n=RANGE;
+ function dlt(a,b,inv){var df=a-b,g=inv?df<=0:df>=0;return MODE?'<small class="'+(g?'ok':'bad')+'">'+(df>=0?'+':'')+df.toFixed(1)+' pts vs current</small>':''}
+ function dp(a,b){var c=b?(a-b)/b*100:0;return MODE?'<small class="'+(c<=0?'ok':'bad')+'">'+(c>=0?'+':'')+Math.round(c)+'% vs current</small>':''}
+ $('kpis').innerHTML='<div class="kpi"><span>Demand</span><b>'+f0(k.dem)+' kg</b><span>'+f0(k.dem/n)+' kg per day</span></div>'+
+ '<div class="kpi"><span>Production</span><b>'+f0(k.prod)+' kg</b><span>'+(k.prod/k.dem*100).toFixed(0)+'% of demand</span></div>'+
+ '<div class="kpi"><span>Actual sales</span><b>'+f0(k.sal)+' kg</b><span>'+inr(k.sal&&ix.reduce(function(a,i){var r=ps(S,i,t0);return a+r.sal*P[i].pr},0))+' revenue</span></div>'+
+ '<div class="kpi"><span>Fill rate (sales ÷ demand)</span><b class="'+(k.fill>=97?'ok':k.fill>=92?'warn':'bad')+'">'+k.fill.toFixed(1)+'%</b>'+dlt(k.fill,kc.fill)+'</div>'+
+ '<div class="kpi"><span>Shortfall: demand not met</span><b class="bad">'+f0(k.short)+' kg</b><span>'+inr(k.lost)+' lost sales</span>'+dp(k.short,kc.short)+'</div>'+
+ '<div class="kpi"><span>Over-availability: expired</span><b class="warn">'+f0(k.w)+' kg</b><span>'+inr(k.wc)+' written off</span>'+dp(k.w,kc.w)+'</div>'+
+ '<div class="kpi"><span>Stock on hand, last day</span><b>'+f0(k.stock)+' kg</b><span>'+(k.stock/(k.dem/n)).toFixed(1)+' days of cover</span></div>';
+ chart(k.o,t0,ix,S);heat(S,t0);week(ix,S,t0);recs(t0);table(S,t0);
+}
+function chart(o,t0,ix,S){var W=980,H=320,L=54,T=14,B=30,m=o.d.length,mx=Math.max.apply(null,o.d.concat(o.p,o.s))*1.08;
+ function X(i){return L+i*(W-L-14)/Math.max(1,m-1)}function Y(v){return H-B-v/mx*(H-B-T)}
+ function ln(a){return a.map(function(v,i){return(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join('')}
+ var g='',q;for(q=0;q<=4;q++){var v=mx*q/4;g+='<line x1="'+L+'" x2="'+(W-14)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(L-8)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="11" fill="var(--muted)">'+f0(v)+'</text>'}
+ var st=Math.ceil(m/9);for(q=0;q<m;q+=st)g+='<text x="'+X(q)+'" y="'+(H-9)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+dl(t0+q)+'</text>';
+ var ar=ln(o.d)+o.s.map(function(v,i){return'L'+X(m-1-i).toFixed(1)+' '+Y(o.s[m-1-i]).toFixed(1)}).join('')+'Z';
+ $('ch').innerHTML='<svg id="csv" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Daily demand, production and sales">'+g+'<path d="'+ar+'" fill="var(--bad)" opacity=".28"/><path d="'+ln(o.d)+'" fill="none" stroke="var(--accent)" stroke-width="2.6" stroke-linejoin="round"/><path d="'+ln(o.p)+'" fill="none" stroke="var(--prod)" stroke-width="2.2" stroke-linejoin="round"/><path d="'+ln(o.s)+'" fill="none" stroke="var(--ok)" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/><line id="vl" y1="'+T+'" y2="'+(H-B)+'" stroke="var(--muted)" style="display:none"/></svg>';
+ tipData={o:o,t0:t0,W:W,L:L,m:m};
+}
+document.addEventListener('mousemove',function(e){var sv=$('csv'),tp=$('tip');if(!sv||!tipData)return;var r=sv.getBoundingClientRect();
+ if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom){tp.style.display='none';var v0=$('vl');if(v0)v0.style.display='none';return}
+ var d=tipData,x=(e.clientX-r.left)/r.width*d.W,i=Math.round((x-d.L)/((d.W-d.L-14)/Math.max(1,d.m-1)));i=Math.max(0,Math.min(d.m-1,i));
+ var X=d.L+i*(d.W-d.L-14)/Math.max(1,d.m-1),vl=$('vl');vl.setAttribute('x1',X);vl.setAttribute('x2',X);vl.style.display='';
+ var o=d.o,sh=o.d[i]-o.s[i],c=sv.parentNode.parentNode.getBoundingClientRect();
+ tp.innerHTML='<b>'+DT[d.t0+i].toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+'</b><br>Demand '+f0(o.d[i])+' kg<br>Production '+f0(o.p[i])+' kg<br>Sales '+f0(o.s[i])+' kg<br>Closing stock '+f0(o.k[i])+' kg<br><span class="bad">Shortfall '+f0(sh)+' kg</span><br><span class="warn">Expired '+f0(o.w[i])+' kg</span>';
+ tp.style.display='block';var lf=e.clientX-c.left+14;if(lf+170>c.width)lf=e.clientX-c.left-180;tp.style.left=lf+'px';tp.style.top=(e.clientY-c.top+10)+'px'});
+function heat(S,t0){var W=980,lw=118,n=DAYS-t0,cw=(W-lw-6)/n,rh=30,s='',i,t;
+ for(i=0;i<N;i++){var y=i*rh+4;s+='<text data-i="'+i+'" x="0" y="'+(y+17)+'" font-size="12" font-weight="'+(i==sel?700:400)+'" fill="'+(i==sel?'var(--accent)':'var(--ink)')+'" style="cursor:pointer">'+P[i].n+'</text>';
+  for(t=t0;t<DAYS;t++){var d=D[i][t],sa=S[i].s[t],k=S[i].k[t],c=d-sa>.03*d?'var(--bad)':k>1.5*AV[i]?'var(--prod)':'var(--ok)',x=lw+(t-t0)*cw,ms=d-sa>.03*d?'Shortfall '+f0(d-sa)+' kg':k>1.5*AV[i]?'Over-available: '+f0(k)+' kg in stock':'Balanced';
+   s+='<rect x="'+x.toFixed(1)+'" y="'+y+'" width="'+Math.max(1,cw-1.2).toFixed(1)+'" height="'+(rh-6)+'" rx="2" fill="'+c+'" opacity="'+(sel<0||sel==i?1:.35)+'"><title>'+P[i].n+', '+dl(t)+': '+ms+'</title></rect>'}}
+ var tk=Math.ceil(n/8);for(t=0;t<n;t+=tk)s+='<text x="'+(lw+t*cw)+'" y="'+(N*rh+14)+'" font-size="11" fill="var(--muted)">'+dl(t0+t)+'</text>';
+ $('hm').innerHTML='<svg viewBox="0 0 '+W+' '+(N*rh+22)+'" role="img" aria-label="Daily availability map">'+s+'</svg>'}
+function week(ix,S,t0){var dm=Array(7).fill(0),pd=Array(7).fill(0),c=Array(7).fill(0),t;for(t=t0;t<DAYS;t++){var w=DW[t];c[w]++;ix.forEach(function(i){dm[w]+=D[i][t];pd[w]+=S[i].pr[t]})}
+ var a=dm.map(function(v,j){return c[j]?v/c[j]:0}),b=pd.map(function(v,j){return c[j]?v/c[j]:0}),mx=Math.max.apply(null,a.concat(b))*1.1,W=420,H=250,B=26,s='';
+ for(var j=0;j<7;j++){var x=j*58+8,h1=a[j]/mx*(H-B-10),h2=b[j]/mx*(H-B-10);s+='<rect x="'+x+'" y="'+(H-B-h1)+'" width="24" height="'+h1+'" rx="3" fill="var(--accent)"><title>'+DN[j]+' demand '+f0(a[j])+' kg</title></rect><rect x="'+(x+26)+'" y="'+(H-B-h2)+'" width="24" height="'+h2+'" rx="3" fill="var(--prod)"><title>'+DN[j]+' production '+f0(b[j])+' kg</title></rect><text x="'+(x+25)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+DN[j]+'</text>'}
+ $('wk').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Weekday demand and production">'+s+'</svg>'}
+function dowStat(i,t0,fn){var s=Array(7).fill(0),c=Array(7).fill(0);for(var t=t0;t<DAYS;t++){s[DW[t]]+=fn(i,t);c[DW[t]]++}return s.map(function(v,j){return c[j]?v/c[j]:0})}
+function recs(t0){var n=RANGE,all=ids(),L=[];
+ all.forEach(function(i){var r=ps(SC,i,t0),it=[],gp=dowStat(i,t0,function(i,t){return D[i][t]-PC[i][t]}),dm=dowStat(i,t0,function(i,t){return D[i][t]}),hi=gp.indexOf(Math.max.apply(null,gp)),lo=dm.indexOf(Math.min.apply(null,dm));
+  if(r.fill<97)it.push({c:'bad',t:'Raise output by about '+f0(r.short/n)+' kg a day, most on '+DN[hi]+'. Lost sales: '+inr(r.lost)+'.'});
+  if(r.w/Math.max(1,r.prod)>.02)it.push({c:'warn',t:'Over-available: '+f0(r.w)+' kg expired ('+inr(r.wc)+'). Trim output about '+f0(r.w/n)+' kg a day or run offers on '+DN[lo]+', the slowest day.'});
+  if(!it.length)it.push({c:'ok',t:'Production and demand are well matched. Keep the current plan.'});
+  L.push({i:i,imp:r.lost+r.wc,it:it})});
+ L.sort(function(a,b){return b.imp-a.imp});
+ $('rec').innerHTML=L.slice(0,sel>=0?1:5).map(function(x){return x.it.map(function(y){return'<div class="rec '+y.c+'" data-i="'+x.i+'"><i></i><div><b>'+P[x.i].n+'</b>'+y.t+'</div></div>'}).join('')}).join('');
+ var a=kp(SC,all,t0),b=kp(SO,all,t0);$('ban').innerHTML='<b>Optimised plan</b> (forecast = same weekday over the last 4 weeks, '+COVER+' day cover): fill rate '+a.fill.toFixed(1)+'% → '+b.fill.toFixed(1)+'%, lost sales '+inr(a.lost)+' → '+inr(b.lost)+', write-offs '+inr(a.wc)+' → '+inr(b.wc)+'.'}
+function table(S,t0){var n=RANGE,h='<tr><th>Product</th><th>Demand kg</th><th>Production kg</th><th>Sales kg</th><th>Fill rate</th><th>Shortfall kg</th><th>Lost sales</th><th>Expired kg</th><th>Write-off</th><th>Status</th><th>Suggested move</th></tr>';
+ for(var i=0;i<N;i++){var r=ps(S,i,t0),sh=r.fill<97,ov=r.w/Math.max(1,r.prod)>.02,c=sh&&ov?'warn':sh?'bad':ov?'warn':'ok',st=sh&&ov?'Mixed':sh?'Shortfall':ov?'Over-available':'Balanced',ac=sh?'Add '+f0(r.short/n)+' kg/day':ov?'Cut '+f0(r.w/n)+' kg/day':'Hold';
+  h+='<tr data-i="'+i+'" class="'+(i==sel?'on':'')+'"><td>'+P[i].n+'</td><td>'+f0(r.dem)+'</td><td>'+f0(r.prod)+'</td><td>'+f0(r.sal)+'</td><td>'+r.fill.toFixed(1)+'%</td><td>'+f0(r.short)+'</td><td>'+inr(r.lost)+'</td><td>'+f0(r.w)+'</td><td>'+inr(r.wc)+'</td><td><span class="chip '+c+'">'+st+'</span></td><td>'+ac+'</td></tr>'}
+ $('tb').innerHTML=h}
+var ps0=$('pr');ps0.innerHTML='<option value="-1">All products</option>'+P.map(function(p,i){return'<option value="'+i+'">'+p.n+'</option>'}).join('');
+function pick(i){sel=i;ps0.value=i;render()}
+ps0.addEventListener('change',function(){pick(+this.value)});
+$('cv').addEventListener('change',function(){COVER=+this.value;render()});
+function seg(id,fn){$(id).addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;[].forEach.call(this.children,function(x){x.setAttribute('aria-pressed',x===b)});fn(b)})}
+seg('rg',function(b){RANGE=+b.dataset.r;render()});seg('md',function(b){MODE=+b.dataset.m;render()});
+document.addEventListener('click',function(e){var el=e.target.closest('[data-i]');if(el)pick(+el.dataset.i==sel?-1:+el.dataset.i)});
+render();
+})();
+</script></body></html>
