@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>(function(){var t='dark';try{t=localStorage.getItem('theme')||'dark'}catch(e){}document.documentElement.setAttribute('data-theme',t)})()</script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Worker attendance tracking system (sample data)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f6f7;--surface:#fff;--ink:#16232a;--muted:#55666e;--line:#d3dde1;--accent:#00789a;--accent-ink:#fff;--soft:#dcecf1;--warn:#6b5210;--warn-bg:#f3ead1;
+  --s1:#2a78d6;--s2:#eb6834;--ga:#146b39;--gb:#8a6400;--gc:#c03535;--ga-bg:#dff3e6;--gb-bg:#f6ecd2;--gc-bg:#f8dede;--sun:rgba(22,35,42,.05);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--accent-ink:#07202a;--soft:#1c3640;--warn:#e2c46e;--warn-bg:#2e2916;
+  --s1:#3987e5;--s2:#d95926;--ga:#4ccc85;--gb:#e2c46e;--gc:#ff8a8a;--ga-bg:#173a2a;--gb-bg:#3a3218;--gc-bg:#3f2125;--sun:rgba(230,238,241,.05)}}
+:root[data-theme="dark"]{--bg:#0f1a1f;--surface:#16252c;--ink:#e6eef1;--muted:#93a7ae;--line:#26383f;--accent:#3cc3e0;--accent-ink:#07202a;--soft:#1c3640;--warn:#e2c46e;--warn-bg:#2e2916;
+  --s1:#3987e5;--s2:#d95926;--ga:#4ccc85;--gb:#e2c46e;--gc:#ff8a8a;--ga-bg:#173a2a;--gb-bg:#3a3218;--gc-bg:#3f2125;--sun:rgba(230,238,241,.05)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 "Instrument Sans",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+button,select{font:inherit;color:inherit}button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+a{color:var(--accent)}
+.wrap{max-width:1180px;margin:0 auto;padding:0 18px 40px}
+.back{display:inline-block;margin-top:14px;font-size:.88rem;font-weight:500;text-decoration:none;color:var(--accent)}.back:hover,.back:focus-visible{text-decoration:underline}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;padding:14px 0 10px}
+h1{font-size:clamp(1.6rem,4.5vw,2.3rem)}
+.tag{display:inline-block;font-size:.74rem;border-radius:999px;padding:1px 10px;background:var(--warn-bg);color:var(--warn);margin-left:8px;vertical-align:middle;font-family:"Instrument Sans",sans-serif;font-weight:500}
+.sub{color:var(--muted);margin:8px 0 0;max-width:90ch;font-size:.95rem}
+.theme,.seg button{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:4px 11px;font-size:.88rem}
+.seg{display:inline-flex;gap:5px;flex-wrap:wrap}.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.bar{position:sticky;top:0;z-index:10;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin-top:6px;display:flex;gap:10px 24px;flex-wrap:wrap;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.bar .l{font-size:.8rem;color:var(--muted);margin-right:6px}
+.bar .info{font-size:.86rem;color:var(--muted)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-top:14px}
+.panel h2{font-size:1.15rem;margin-bottom:3px}.note{color:var(--muted);font-size:.86rem;margin:0 0 10px;max-width:104ch}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+@media (max-width:760px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+.kpi span{display:block;font-size:.78rem;color:var(--muted)}.kpi b{display:block;font:700 1.55rem "Bricolage Grotesque",sans-serif;margin:2px 0 0}.kpi small{display:block;font-size:.76rem;color:var(--muted)}
+.msg{background:var(--soft);border-radius:10px;padding:10px 14px;margin-top:12px;font-size:.93rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.g2>.panel{margin-top:0}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}.g3>.panel{margin-top:0}
+svg{width:100%;height:auto;display:block;touch-action:pan-y}svg text{fill:var(--muted);font-size:12px;font-family:inherit}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:.82rem;color:var(--muted);margin:2px 0 6px}.lg span{display:inline-flex;align-items:center;gap:6px}
+.bx{display:inline-block;width:12px;height:12px;border-radius:3px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:0}
+#tip{position:absolute;z-index:20;pointer-events:none;display:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);padding:8px 11px;font-size:.82rem;line-height:1.5;max-width:300px}
+#tip b:first-child{display:block;margin-bottom:2px}.mu{color:var(--muted)}
+.hb{display:grid;grid-template-columns:minmax(90px,max-content) 1fr auto;gap:7px 10px;align-items:center;font-size:.86rem}
+.hb .tr{height:16px;background:var(--bg);border-radius:0 4px 4px 0;cursor:default}.hb .br{height:16px;background:var(--accent);border-radius:0 4px 4px 0;min-width:2px}
+.hb .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.hb .v small{color:var(--muted);margin-left:5px}
+.split{display:flex;height:26px;border-radius:7px;overflow:hidden;gap:2px;margin:6px 0 8px}.split div{display:grid;place-items:center;font-size:.78rem;font-weight:500;min-width:2px}.split span{background:var(--surface);color:var(--ink);border-radius:4px;padding:0 6px;line-height:1.5}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:.84rem}th,td{padding:6px 9px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th:first-child,td:first-child{text-align:left}
+th{background:var(--surface);color:var(--muted);font-weight:500;position:sticky;top:0}tbody tr:hover{background:var(--soft)}tfoot td{font-weight:500;border-top:2px solid var(--line)}
+.grade{display:inline-block;min-width:26px;text-align:center;border-radius:999px;padding:0 8px;font-weight:700;font-size:.8rem}
+.gA{color:var(--ga);background:var(--ga-bg)}.gB{color:var(--gb);background:var(--gb-bg)}.gC{color:var(--gc);background:var(--gc-bg)}
+.flow{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;counter-reset:s}
+.flow div{position:relative;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:.85rem;color:var(--muted)}
+.flow b{display:flex;align-items:center;gap:8px;color:var(--ink);font-size:.95rem;margin-bottom:4px}
+.flow b::before{counter-increment:s;content:counter(s);flex:none;display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:.78rem}
+.flow svg{width:26px;height:26px;color:var(--accent);margin-bottom:6px}
+.cols3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:12px}
+.cols3 h3{font-size:.98rem;margin-bottom:6px}.cols3 ul{margin:0;padding-left:18px;font-size:.87rem;color:var(--muted)}.cols3 li{margin:4px 0}.cols3 li b{color:var(--ink);font-weight:500}
+dl.def{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:6px 14px;font-size:.87rem;margin:10px 0 0}dl.def dt{font-weight:500}dl.def dd{margin:0;color:var(--muted)}
+.dq{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:.87rem}.dq b{font-variant-numeric:tabular-nums;text-align:right}.dq .ok{color:var(--ga)}
+footer{color:var(--muted);font-size:.84rem;margin-top:18px}
+@media (max-width:980px){.g3{grid-template-columns:1fr 1fr}}
+@media (max-width:760px){.g2,.g3{grid-template-columns:1fr}.bar{position:static}dl.def{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Back to portfolio</a>
+  <div class="top">
+    <div>
+      <h1>Worker attendance tracking system<span class="tag">Sample data</span></h1>
+      <p class="sub">Monthly attendance and contractor performance for contract farm workers at 3 sample sites. Every worker is registered once, attendance is recorded daily as full day, half day or absent with the place of work, automatic checks stop double or wrong entries, and the dashboards below are built from that register.</p>
+    </div>
+    <button class="theme" id="tb" type="button" aria-label="Switch light or dark theme">Theme</button>
+  </div>
+
+  <div class="bar" role="region" aria-label="Filters">
+    <div><span class="l">Month</span><span class="seg" id="msel" role="group" aria-label="Month"></span></div>
+    <div><span class="l">Site</span><span class="seg" id="ssel" role="group" aria-label="Site"></span></div>
+    <div class="info" id="info"></div>
+  </div>
+
+  <section class="kpis" id="kpis" aria-label="Key figures"></section>
+  <div class="msg" id="insight"></div>
+
+  <section class="panel">
+    <h2>Daily manpower</h2>
+    <p class="note" id="dnote"></p>
+    <div class="lg"><span><i class="bx" style="background:var(--s1)"></i>Male</span><span><i class="bx" style="background:var(--s2)"></i>Female</span><span><i class="bx" style="background:var(--sun);border:1px solid var(--line)"></i>Sunday (weekly off for most workers)</span></div>
+    <div id="daily"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Contractor performance</h2>
+    <p class="note">Stability factor = regular workers (20 or more mandays in the month) ÷ workers who worked. Retention = last month's workers of that contractor who worked again this month. Score = average of attendance % and stability factor. Grade A at 85% or more, B at 70% or more, otherwise C.</p>
+    <div class="tw" id="ctab"></div>
+  </section>
+
+  <div class="g2">
+    <section class="panel"><h2>Mandays by contractor</h2><p class="note">Share of the month's mandays.</p><div class="hb" id="hcon"></div></section>
+    <section class="panel"><h2 id="sitet">Site-wise distribution</h2><p class="note" id="sitenote"></p><div id="site"></div></section>
+  </div>
+
+  <div class="g3">
+    <section class="panel"><h2>By worker category</h2><p class="note">Mandays and attendance %.</p><div class="hb" id="hcat"></div></section>
+    <section class="panel"><h2>By work location</h2><p class="note">Split days (two locations) count half at each.</p><div class="hb" id="hloc"></div></section>
+    <section class="panel"><h2>By shift</h2><p class="note">Workers who worked and mandays.</p><div class="hb" id="hshift"></div></section>
+  </div>
+
+  <div class="g2">
+    <section class="panel"><h2>By gender</h2><p class="note">Share of mandays, with workers and attendance.</p><div id="gender"></div></section>
+    <section class="panel"><h2>Local and outside workers</h2><p class="note">Outside workers by home state.</p><div id="wtype"></div></section>
+  </div>
+
+  <section class="panel">
+    <h2>Contractor-wise daily mandays</h2>
+    <p class="note">Each cell is one contractor on one day. Darker means more mandays. Hover for the number.</p>
+    <div id="heat"></div>
+  </section>
+
+  <div class="g2">
+    <section class="panel"><h2>Monthly trend</h2><p class="note" id="trnote"></p><div id="trend"></div></section>
+    <section class="panel"><h2>Data quality</h2><p class="note">Counts for the selected month and site. Entries blocked at the time of typing never reach the register; the rest are flagged for the site in-charge to fix.</p><div class="dq" id="dq"></div></section>
+  </div>
+
+  <section class="panel" id="method">
+    <h2>How the system works</h2>
+    <p class="note">Built in Google Sheets with Apps Script for contract workers across several farm sites. Each site keeps its own register; HR keeps one worker master; a compiled dashboard reads every site.</p>
+    <div class="flow" id="flow"></div>
+    <div class="cols3">
+      <div><h3>Checks while typing</h3><ul>
+        <li><b>One day per person per date.</b> Full day = 1, half day = 0.5. A worker can never total more than one day on a date, across all rows, locations and sites.</li>
+        <li><b>No repeat location.</b> The same worker can't be entered twice at one location on one day.</li>
+        <li><b>Location required.</b> Needed for a full or half day, empty for an absence. A worker who moves during the day is recorded at both places, half a day each.</li>
+        <li><b>Inside the employment window.</b> No attendance before the joining date or after the leaving date.</li>
+        <li><b>Picked, not typed.</b> Workers are chosen from a list of registered IDs and names, so look-alike names are never mixed up.</li>
+      </ul></div>
+      <div><h3>Checks on the worker record</h3><ul>
+        <li><b>One identity.</b> Aadhaar is the unique identity: one number can't sit under two people, and names may repeat.</li>
+        <li><b>Complete and valid KYC.</b> 12-digit Aadhaar, valid bank account and IFSC, age 18 or over, home state that matches local or outside.</li>
+        <li><b>Rejoining rules.</b> Records of one person can't overlap. After "Removed" a worker may rejoin the next day, after "Exit" only after 30 days, and "Black listed" never.</li>
+        <li><b>New workers without Aadhaar</b> get a short grace period, then the row is flagged.</li>
+      </ul></div>
+      <div><h3>Checks for HR across sites</h3><ul>
+        <li><b>Automatic Worker ID.</b> When a site registers a worker, a script asks the HR master for an ID within seconds, so every site uses the same ID for the same person.</li>
+        <li><b>Possible duplicates.</b> Same name and father or husband name raises a warning that HR can confirm or override.</li>
+        <li><b>Active elsewhere.</b> A worker still active at another site can't be registered again until the old site releases them.</li>
+        <li><b>Two sites, one date.</b> People marked at two sites on the same day are listed for HR to review.</li>
+      </ul></div>
+    </div>
+    <h3 style="font-size:.98rem;margin-top:16px">Definitions</h3>
+    <dl class="def">
+      <dt>Mandays</dt><dd>Full days + 0.5 × half days.</dd>
+      <dt>Attendance %</dt><dd>Mandays ÷ days marked (full, half or absent). Unmarked days are left out and counted separately.</dd>
+      <dt>Avg mandays per worker</dt><dd>Mandays ÷ workers who worked at least one day in the month.</dd>
+      <dt>Avg daily manpower</dt><dd>Mandays ÷ days in the month.</dd>
+      <dt>Workers on roll</dt><dd>Workers whose joining and leaving dates cover any day of the month.</dd>
+      <dt>Unmarked day</dt><dd>A working day between joining and leaving with no entry at all.</dd>
+    </dl>
+  </section>
+
+  <footer>All workers, contractors, sites and numbers on this page are generated with a fixed random seed in JavaScript. They do not come from any farm or company, and no real worker data is used.</footer>
+</div>
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+var $=function(s){return document.querySelector(s)},$$=function(s){return document.querySelectorAll(s)};
+/* ---------- seeded random ---------- */
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+var R=mulberry(20260715);
+function pick(items,w){var s=0,i,u;for(i=0;i<w.length;i++)s+=w[i];u=R()*s;for(i=0;i<w.length;i++){u-=w[i];if(u<0)return items[i]}return items[items.length-1]}
+function norm(){return Math.sqrt(-2*Math.log(R()+1e-12))*Math.cos(2*Math.PI*R())}
+
+/* ---------- sample set-up ---------- */
+var DAY=864e5,T0=Date.UTC(2026,6,1),T1=Date.UTC(2026,9,31),MONTHS=[[2026,6],[2026,7],[2026,8],[2026,9]];
+var MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var CON=[
+  {n:'Ganga Labour Services',r:.94,churn:.025,out:.3},
+  {n:'Shivam Manpower',r:.905,churn:.05,out:.7},
+  {n:'Kisan Workforce',r:.885,churn:.06,out:.2},
+  {n:'Arya Agro Services',r:.84,churn:.13,out:.8},
+  {n:'Balaji Contractors',r:.9,churn:.07,out:.5},
+  {n:'Vinayak Labour Co.',r:.925,churn:.035,out:.15}];
+var SITES=[
+  {id:'A',n:'Site A',n0:62,mix:[.36,.24,.2,0,0,.2],locs:[['GH1','Greenhouse 1'],['GH2','Greenhouse 2'],['GH3','Greenhouse 3'],['NUR','Nursery'],['PK1','Packhouse 1']]},
+  {id:'B',n:'Site B',n0:48,mix:[.15,.3,0,.3,.25,0],locs:[['GH4','Greenhouse 4'],['GH5','Greenhouse 5'],['GH6','Greenhouse 6'],['PK2','Packhouse 2']]},
+  {id:'C',n:'Site C',n0:36,mix:[0,0,.35,.3,.35,0],locs:[['NH1','Net house 1'],['NH2','Net house 2'],['OF1','Open field'],['PK3','Packhouse 3']]}];
+var CATS=['Grower','Harvester','Packer','Sprayer','Cleaner','Loader'],CATW=[.34,.25,.13,.08,.1,.1],FEM={Grower:.4,Harvester:.45,Packer:.7,Sprayer:.1,Cleaner:.55,Loader:.08};
+var SHIFTS=['06:00–14:00','08:00–17:00','07:00–18:00'],STATES=['Madhya Pradesh','Bihar','Uttar Pradesh','Jharkhand','Maharashtra'],STW=[.3,.25,.2,.15,.1];
+var MF=[.97,.975,1,.96],GROW=[1,1.05,1.12,1.18];
+
+/* ---------- workers ---------- */
+var W=[],nid=1;
+function newWorker(site,join){var ci=pick([0,1,2,3,4,5],site.mix),c=CON[ci],cat=pick(CATS,CATW),out=R()<c.out;
+  var w={id:'W'+String(nid++).padStart(5,'0'),site:site.id,con:ci,cat:cat,g:R()<FEM[cat]?'F':'M',out:out,st:out?pick(STATES,STW):'Rajasthan',
+    sh:cat==='Packer'?pick(SHIFTS,[.15,.75,.1]):pick(SHIFTS,[.35,.4,.25]),join:join,leave:null,p:Math.min(.99,Math.max(.62,c.r+norm()*.035)),
+    home:cat==='Packer'?site.locs.length-1:Math.floor(R()*(site.locs.length-1))};
+  W.push(w);return w}
+SITES.forEach(function(s){for(var i=0;i<s.n0;i++)newWorker(s,T0-Math.floor(R()*110)*DAY)});
+for(var t=T0;t<=T1;t+=DAY){var mi=new Date(t).getUTCMonth()-6;
+  SITES.forEach(function(s){var act=W.filter(function(w){return w.site===s.id&&w.join<=t&&(!w.leave||w.leave>=t)});
+    act.forEach(function(w){if(R()<CON[w.con].churn/30){w.leave=t;w.status=R()<.7?'Exit':'Removed'}});
+    if(new Date(t).getUTCDay()===1){var target=Math.round(s.n0*GROW[mi]),now=act.filter(function(w){return !w.leave}).length;for(var k=0;k<target-now;k++)newWorker(s,t+Math.floor(R()*3)*DAY)}})}
+
+/* ---------- daily register ---------- */
+var D0=T0,ND=Math.round((T1-T0)/DAY)+1;
+W.forEach(function(w){var site=SITES.filter(function(s){return s.id===w.site})[0];w.a=new Array(ND);w.l=new Array(ND);
+  for(var d=0;d<ND;d++){var t=D0+d*DAY;if(t<w.join||(w.leave&&t>w.leave))continue;var dow=new Date(t).getUTCDay(),mi=new Date(t).getUTCMonth()-6;
+    if(dow===0){if(R()<.2){w.a[d]=1;w.l[d]=[site.locs[w.home][0]]}continue}
+    var q=w.p*MF[mi],u=R();
+    if(u<q*.92)w.a[d]=1;else if(u<q)w.a[d]=.5;else if(u<.992)w.a[d]=0;else w.a[d]=null;
+    if(w.a[d]>0){var loc=R()<.8?w.home:Math.floor(R()*site.locs.length);w.l[d]=[site.locs[loc][0]];
+      if(w.a[d]===1&&R()<.04){var l2=(loc+1)%site.locs.length;w.l[d].push(site.locs[l2][0])}}}});
+var DQ={};SITES.forEach(function(s){MONTHS.forEach(function(m,i){DQ[s.id+i]={dup:Math.floor(R()*4),loc:Math.floor(R()*3),rec:Math.floor(R()*3),cross:Math.floor(R()*2)}})});
+
+/* ---------- aggregation ---------- */
+function mrange(mi){var y=MONTHS[mi][0],m=MONTHS[mi][1],a=Date.UTC(y,m,1),b=Date.UTC(y,m+1,0);return {a:a,b:b,d0:Math.round((a-D0)/DAY),d1:Math.round((b-D0)/DAY),n:Math.round((b-a)/DAY)+1}}
+function inSite(w,s){return s==='ALL'||w.site===s}
+function agg(mi,s){var r=mrange(mi),o={days:r.n,roll:0,worked:0,md:0,P:0,H:0,A:0,marked:0,unmarked:0,daily:[],con:{},cat:{},loc:{},shift:{},gen:{},type:{},state:{},site:{},cd:{},ws:{}};
+  for(var d=0;d<r.n;d++)o.daily.push({M:0,F:0,pres:0,A:0,t:r.a+d*DAY});
+  W.forEach(function(w){if(!inSite(w,s))return;if(w.join>r.b||(w.leave&&w.leave<r.a))return;o.roll++;
+    var md=0,P=0,H=0,A=0,un=0;
+    for(var d=r.d0;d<=r.d1;d++){var v=w.a[d],t=D0+d*DAY,dd=d-r.d0;if(t<w.join||(w.leave&&t>w.leave))continue;
+      if(v==null){if(new Date(t).getUTCDay()!==0)un++;continue}
+      if(v===1)P++;else if(v===.5)H++;else A++;
+      if(v>0){md+=v;o.daily[dd][w.g]+=v;o.daily[dd].pres++;var ls=w.l[d];ls.forEach(function(c){o.loc[c]=(o.loc[c]||0)+v/ls.length});
+        var k=w.con;o.cd[k]=o.cd[k]||new Array(r.n).fill(0);o.cd[k][dd]+=v}else o.daily[dd].A++}
+    o.md+=md;o.P+=P;o.H+=H;o.A+=A;o.marked+=P+H+A;o.unmarked+=un;if(md>0)o.worked++;o.ws[w.id]=md;
+    function add(map,key){var e=map[key]=map[key]||{roll:0,worked:0,md:0,mk:0,reg:0};e.roll++;e.md+=md;e.mk+=P+H+A;if(md>0)e.worked++;if(md>=20)e.reg++}
+    add(o.con,w.con);add(o.cat,w.cat);add(o.shift,w.sh);add(o.gen,w.g);add(o.type,w.out?'Outside':'Local');add(o.site,w.site);if(w.out)add(o.state,w.st)});
+  o.att=o.marked?o.md/o.marked:0;return o}
+
+/* ---------- formatting ---------- */
+function nf(v,d){d=d||0;return v.toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function pc(v){return Math.round(v*100)+'%'}
+function grade(sc){return sc>=.85?'A':sc>=.7?'B':'C'}
+function gp(g){return '<span class="grade g'+g+'">'+g+'</span>'}
+function sw(c){return '<i class="sw" style="background:'+c+'"></i>'}
+var tip=$('#tip');
+function showTip(e,h){tip.innerHTML=h;tip.style.display='block';var r=tip.getBoundingClientRect(),x=e.clientX+14,y=e.clientY+14;if(x+r.width>innerWidth-8)x=e.clientX-r.width-14;if(y+r.height>innerHeight-8)y=e.clientY-r.height-14;tip.style.left=Math.max(4,x+scrollX)+'px';tip.style.top=Math.max(4,y+scrollY)+'px'}
+function hideTip(){tip.style.display='none'}
+function esc(h){return String(h).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function bindTips(host){host.querySelectorAll('[data-tip]').forEach(function(el){el.addEventListener('pointermove',function(e){showTip(e,el.getAttribute('data-tip'))});el.addEventListener('pointerleave',hideTip)})}
+function yScale(mx){mx=mx||1;var st=Math.pow(10,Math.floor(Math.log10(mx/4))),e=mx/4/st;st*=e>=7.5?10:e>=3.5?5:e>=1.5?2:1;var top=Math.ceil(mx/st-1e-9)*st,t=[];for(var v=0;v<=top+st*1e-6;v+=st)t.push(+v.toFixed(6));return {max:top,ticks:t}}
+
+/* horizontal bars: rows [label, value, valueText, tipHtml] */
+function hbars(host,rows){var mx=Math.max.apply(null,rows.map(function(r){return r[1]}).concat([1e-9]));
+  host.innerHTML=rows.map(function(r){return '<span>'+r[0]+'</span><div class="tr" data-tip="'+esc(r[3])+'"><div class="br" style="width:'+(r[1]/mx*100)+'%"></div></div><span class="v">'+r[2]+'</span>'}).join('');bindTips(host)}
+
+/* ---------- state ---------- */
+var S={m:3,s:'ALL'};
+$('#msel').innerHTML=MONTHS.map(function(m,i){return '<button type="button" data-m="'+i+'" aria-pressed="'+(i===S.m)+'">'+MN[m[1]]+' '+m[0]+'</button>'}).join('');
+$('#ssel').innerHTML=['ALL'].concat(SITES.map(function(s){return s.id})).map(function(s){return '<button type="button" data-s="'+s+'" aria-pressed="'+(s===S.s)+'">'+(s==='ALL'?'All sites':'Site '+s)+'</button>'}).join('');
+$$('#msel button').forEach(function(b){b.addEventListener('click',function(){S.m=+b.dataset.m;$$('#msel button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});render()})});
+$$('#ssel button').forEach(function(b){b.addEventListener('click',function(){S.s=b.dataset.s;$$('#ssel button').forEach(function(x){x.setAttribute('aria-pressed',x===b)});render()})});
+function locName(c){var n=c;SITES.forEach(function(s){s.locs.forEach(function(l){if(l[0]===c)n=l[1]})});return n}
+function siteOfLoc(c){var n='';SITES.forEach(function(s){s.locs.forEach(function(l){if(l[0]===c)n=s.id})});return n}
+
+function render(){
+  var o=agg(S.m,S.s),pv=S.m>0?agg(S.m-1,S.s):null,mn=MN[MONTHS[S.m][1]]+' '+MONTHS[S.m][0],sn=S.s==='ALL'?'all sites':'Site '+S.s;
+  $('#info').textContent=mn+' · '+o.days+' days · '+sn;
+  // KPIs
+  var dqm=0,dk=S.s==='ALL'?SITES.map(function(s){return s.id}):[S.s];dk.forEach(function(k){var q=DQ[k+S.m];dqm+=q.loc+q.rec+(S.s==='ALL'?q.cross:0)});
+  var K=[['Workers on roll',nf(o.roll),'Active at any time in the month'],['Workers who worked',nf(o.worked),'At least one day'],['Total mandays',nf(o.md,1),nf(o.P)+' full, '+nf(o.H)+' half days'],
+    ['Avg daily manpower',nf(o.md/o.days,1),'Mandays ÷ '+o.days+' days'],['Avg mandays / worker',nf(o.worked?o.md/o.worked:0,1),'Workers who worked'],['Attendance %',pc(o.att),pv?'Last month '+pc(pv.att):'First month of sample'],
+    ['Absent days',nf(o.A),'Marked A'],['Data issues to fix',nf(dqm),'Plus '+nf(o.unmarked)+' unmarked days']];
+  $('#kpis').innerHTML=K.map(function(k){return '<div class="kpi"><span>'+k[0]+'</span><b>'+k[1]+'</b><small>'+k[2]+'</small></div>'}).join('');
+  // contractors
+  var cons=Object.keys(o.con).map(Number).sort(function(a,b){return o.con[b].md-o.con[a].md});
+  var crow=cons.map(function(ci){var e=o.con[ci],att=e.mk?e.md/e.mk:0,stab=e.worked?e.reg/e.worked:0,lastW=[],ret=null,nw=0;
+    if(pv){W.forEach(function(w){if(w.con===ci&&inSite(w,S.s)&&pv.ws[w.id]>0)lastW.push(w.id)});var again=lastW.filter(function(id){return o.ws[id]>0}).length;ret=lastW.length?again/lastW.length:null;
+      W.forEach(function(w){if(w.con===ci&&inSite(w,S.s)&&o.ws[w.id]>0&&!(pv.ws[w.id]>0))nw++})}
+    var sc=(att+stab)/2;return {ci:ci,e:e,att:att,stab:stab,ret:ret,nw:nw,sc:sc,g:grade(sc)}});
+  var best=crow.slice().sort(function(a,b){return b.sc-a.sc})[0],worst=crow.slice().sort(function(a,b){return a.sc-b.sc})[0];
+  $('#insight').innerHTML='<b>'+mn+', '+sn+':</b> '+nf(o.worked)+' workers gave '+nf(o.md,1)+' mandays at '+pc(o.att)+' attendance'+(pv?' ('+(o.att>=pv.att?'up':'down')+' from '+pc(pv.att)+' last month)':'')+'. <b>'+CON[best.ci].n+'</b> is the strongest contractor (score '+pc(best.sc)+', grade '+best.g+')'+(crow.length>1?'; <b>'+CON[worst.ci].n+'</b> needs attention (score '+pc(worst.sc)+', grade '+worst.g+'), mostly from '+(worst.stab<worst.att?'low stability: many of its workers worked only part of the month':'low attendance')+'.':'.');
+  var tot={roll:0,worked:0,md:0,mk:0,reg:0};crow.forEach(function(c){tot.roll+=c.e.roll;tot.worked+=c.e.worked;tot.md+=c.e.md;tot.mk+=c.e.mk;tot.reg+=c.e.reg});
+  $('#ctab').innerHTML='<table><thead><tr><th>Contractor</th><th>Workers on roll</th><th>Workers worked</th><th>Mandays</th><th>Avg mandays / worker</th><th>Avg daily headcount</th><th>Attendance %</th><th>Regular workers</th><th>Stability factor</th><th>Retention %</th><th>New workers</th><th>Score</th><th>Grade</th></tr></thead><tbody>'+
+    crow.map(function(c){return '<tr><td>'+CON[c.ci].n+'</td><td>'+c.e.roll+'</td><td>'+c.e.worked+'</td><td>'+nf(c.e.md,1)+'</td><td>'+nf(c.e.worked?c.e.md/c.e.worked:0,1)+'</td><td>'+nf(c.e.md/o.days,1)+'</td><td>'+pc(c.att)+'</td><td>'+c.e.reg+'</td><td>'+pc(c.stab)+'</td><td>'+(c.ret==null?'—':pc(c.ret))+'</td><td>'+(pv?c.nw:'—')+'</td><td>'+pc(c.sc)+'</td><td>'+gp(c.g)+'</td></tr>'}).join('')+
+    '</tbody><tfoot><tr><td>All contractors</td><td>'+tot.roll+'</td><td>'+tot.worked+'</td><td>'+nf(tot.md,1)+'</td><td>'+nf(tot.worked?tot.md/tot.worked:0,1)+'</td><td>'+nf(tot.md/o.days,1)+'</td><td>'+pc(tot.mk?tot.md/tot.mk:0)+'</td><td>'+tot.reg+'</td><td>'+pc(tot.worked?tot.reg/tot.worked:0)+'</td><td></td><td></td><td></td><td></td></tr></tfoot></table>';
+  hbars($('#hcon'),crow.slice().sort(function(a,b){return b.e.md-a.e.md}).map(function(c){var sh=c.e.md/o.md;return [CON[c.ci].n,c.e.md,nf(c.e.md,0)+'<small>'+pc(sh)+'</small>','<b>'+CON[c.ci].n+'</b><div>'+nf(c.e.md,1)+' mandays, '+pc(sh)+' of total</div><div>'+c.e.worked+' workers worked · grade '+c.g+'</div>']}));
+  // sites
+  var sites=Object.keys(o.site).sort();
+  $('#sitet').textContent=S.s==='ALL'?'Site-wise distribution':'Site '+S.s+' at a glance';
+  $('#sitenote').textContent=S.s==='ALL'?'Each site keeps its own register; the compiled view adds them up.':'Pick "All sites" to compare the three sites.';
+  $('#site').innerHTML='<div class="tw"><table><thead><tr><th>Site</th><th>Workers worked</th><th>Mandays</th><th>Share</th><th>Attendance %</th><th>Male</th><th>Female</th><th>Local</th><th>Outside</th></tr></thead><tbody>'+sites.map(function(si){var e=o.site[si],ws=W.filter(function(w){return w.site===si&&o.ws[w.id]>0});
+    var c=function(f){return ws.filter(f).length};return '<tr><td>Site '+si+'</td><td>'+e.worked+'</td><td>'+nf(e.md,1)+'</td><td>'+pc(e.md/o.md)+'</td><td>'+pc(e.mk?e.md/e.mk:0)+'</td><td>'+c(function(w){return w.g==='M'})+'</td><td>'+c(function(w){return w.g==='F'})+'</td><td>'+c(function(w){return !w.out})+'</td><td>'+c(function(w){return w.out})+'</td></tr>'}).join('')+'</tbody></table></div>';
+  // category / location / shift
+  hbars($('#hcat'),CATS.filter(function(c){return o.cat[c]}).sort(function(a,b){return o.cat[b].md-o.cat[a].md}).map(function(c){var e=o.cat[c],a=e.mk?e.md/e.mk:0;return [c,e.md,nf(e.md,0)+'<small>'+pc(a)+'</small>','<b>'+c+'</b><div>'+nf(e.md,1)+' mandays · '+e.worked+' workers</div><div>Attendance '+pc(a)+' · '+nf(e.worked?e.md/e.worked:0,1)+' mandays per worker</div>']}));
+  hbars($('#hloc'),Object.keys(o.loc).sort(function(a,b){return o.loc[b]-o.loc[a]}).map(function(c){var v=o.loc[c];return [c,v,nf(v,0)+'<small>'+pc(v/o.md)+'</small>','<b>'+c+' · '+locName(c)+'</b><div>Site '+siteOfLoc(c)+'</div><div>'+nf(v,1)+' mandays, '+pc(v/o.md)+' of total</div>']}));
+  hbars($('#hshift'),SHIFTS.filter(function(x){return o.shift[x]}).map(function(x){var e=o.shift[x];return [x,e.md,nf(e.md,0)+'<small>'+e.worked+' wkrs</small>','<b>Shift '+x+'</b><div>'+e.worked+' workers worked · '+nf(e.md,1)+' mandays</div><div>Attendance '+pc(e.mk?e.md/e.mk:0)+'</div>']}));
+  // gender
+  var gm=o.gen.M||{roll:0,worked:0,md:0,mk:0},gf=o.gen.F||{roll:0,worked:0,md:0,mk:0},fs=o.md?gf.md/o.md:0;
+  $('#gender').innerHTML='<div class="split" role="img" aria-label="Male '+pc(1-fs)+', female '+pc(fs)+' of mandays"><div style="flex:'+(1-fs)+';background:var(--s1)"><span>Male '+pc(1-fs)+'</span></div><div style="flex:'+fs+';background:var(--s2)"><span>Female '+pc(fs)+'</span></div></div>'+
+    '<div class="tw"><table><thead><tr><th>Gender</th><th>On roll</th><th>Worked</th><th>Mandays</th><th>Avg / worker</th><th>Attendance %</th></tr></thead><tbody>'+[['Male',gm,'var(--s1)'],['Female',gf,'var(--s2)']].map(function(g){var e=g[1];return '<tr><td>'+sw(g[2])+g[0]+'</td><td>'+e.roll+'</td><td>'+e.worked+'</td><td>'+nf(e.md,1)+'</td><td>'+nf(e.worked?e.md/e.worked:0,1)+'</td><td>'+pc(e.mk?e.md/e.mk:0)+'</td></tr>'}).join('')+'</tbody></table></div>';
+  // worker type + states
+  var lo=o.type.Local||{worked:0,md:0,mk:0},ou=o.type.Outside||{worked:0,md:0,mk:0},os=o.md?ou.md/o.md:0;
+  $('#wtype').innerHTML='<div class="split" role="img" aria-label="Local '+pc(1-os)+', outside '+pc(os)+' of mandays"><div style="flex:'+(1-os)+';background:var(--accent);color:var(--accent-ink)"><span>Local '+pc(1-os)+'</span></div><div style="flex:'+os+';background:var(--muted);color:var(--surface)"><span>Outside '+pc(os)+'</span></div></div>'+
+    '<p class="note" style="margin:0 0 8px">Local: '+lo.worked+' workers, '+pc(lo.mk?lo.md/lo.mk:0)+' attendance (home state Rajasthan). Outside: '+ou.worked+' workers, '+pc(ou.mk?ou.md/ou.mk:0)+' attendance.</p><div class="hb" id="hstate"></div>';
+  hbars($('#hstate'),Object.keys(o.state).sort(function(a,b){return o.state[b].md-o.state[a].md}).map(function(st){var e=o.state[st];return [st,e.md,e.worked+' wkrs<small>'+nf(e.md,0)+' md</small>','<b>'+st+'</b><div>'+e.worked+' workers · '+nf(e.md,1)+' mandays</div><div>'+nf(e.worked?e.md/e.worked:0,1)+' mandays per worker</div>']}));
+  drawDaily(o);drawHeat(o,cons);drawTrend();
+  // data quality
+  var q={dup:0,loc:0,rec:0,cross:0};dk.forEach(function(k){var x=DQ[k+S.m];q.dup+=x.dup;q.loc+=x.loc;q.rec+=x.rec;q.cross+=x.cross});
+  var rows=[['Second entry for a worker on one date (blocked while typing)',q.dup],['Rows with a location issue',q.loc],['Unmarked working days (between joining and leaving)',o.unmarked],['Worker records needing attention',q.rec],['Rows not found in the worker master',0],['People marked at two sites on one date (for HR)',S.s==='ALL'?q.cross:'—']];
+  $('#dq').innerHTML=rows.map(function(r){return '<span>'+r[0]+'</span><b'+(r[1]===0?' class="ok"':'')+'>'+(r[1]===0?'0 ✓':r[1])+'</b>'}).join('');
+}
+
+/* ---------- daily stacked columns ---------- */
+function drawDaily(o){var host=$('#daily'),W2=Math.max(300,host.clientWidth||760),H2=240,m={l:44,r:10,t:12,b:30},iw=W2-m.l-m.r,ih=H2-m.t-m.b,n=o.daily.length,bw=iw/n;
+  var mx=Math.max.apply(null,o.daily.map(function(d){return d.M+d.F})),ys=yScale(mx*1.05);function Y(v){return m.t+ih-v/ys.max*ih}
+  var g='<svg viewBox="0 0 '+W2+' '+H2+'" role="img" aria-label="Daily mandays by gender">';
+  o.daily.forEach(function(d,i){if(new Date(d.t).getUTCDay()===0)g+='<rect x="'+(m.l+i*bw)+'" y="'+m.t+'" width="'+bw+'" height="'+ih+'" fill="var(--sun)"/>'});
+  ys.ticks.forEach(function(t){g+='<line x1="'+m.l+'" x2="'+(W2-m.r)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="var(--line)"/><text x="'+(m.l-7)+'" y="'+(Y(t)+4)+'" text-anchor="end">'+t+'</text>'});
+  var w=Math.max(2,bw*.66),step=bw<14?7:bw<22?3:1;
+  o.daily.forEach(function(d,i){var x=m.l+i*bw+(bw-w)/2,yM=Y(d.M),yT=Y(d.M+d.F),r=Math.min(3,w/2);
+    if(d.M>0)g+='<rect x="'+x.toFixed(1)+'" y="'+yM.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+(Y(0)-yM).toFixed(1)+'" fill="var(--s1)"/>';
+    if(d.F>0){var y0=yM-(d.M>0?1.5:0),hh=y0-yT;if(hh>0)g+='<path d="M'+x+' '+y0+'V'+(yT+r)+'Q'+x+' '+yT+' '+(x+r)+' '+yT+'H'+(x+w-r)+'Q'+(x+w)+' '+yT+' '+(x+w)+' '+(yT+r)+'V'+y0+'Z" fill="var(--s2)"/>'}
+    var dt=new Date(d.t);if(i%step===0)g+='<text x="'+(m.l+i*bw+bw/2)+'" y="'+(H2-10)+'" text-anchor="middle">'+dt.getUTCDate()+'</text>';
+    g+='<rect class="hit" x="'+(m.l+i*bw)+'" y="'+m.t+'" width="'+bw+'" height="'+ih+'" fill="transparent" data-tip="'+esc('<b>'+DN[dt.getUTCDay()]+' '+dt.getUTCDate()+' '+MN[dt.getUTCMonth()]+'</b><div>'+sw('var(--s1)')+'Male: '+nf(d.M,1)+' mandays</div><div>'+sw('var(--s2)')+'Female: '+nf(d.F,1)+' mandays</div><div class="mu">'+d.pres+' workers present · '+d.A+' absent</div>')+'"/>'});
+  host.innerHTML=g+'</svg>';bindTips(host);
+  var wd=o.daily.filter(function(d){return new Date(d.t).getUTCDay()!==0}),avg=wd.reduce(function(s,d){return s+d.M+d.F},0)/wd.length,lo=wd.reduce(function(a,d){return d.M+d.F<a.M+a.F?d:a},wd[0]),dl=new Date(lo.t);
+  $('#dnote').textContent='Mandays per day, split by gender. Working days average '+nf(avg,1)+' mandays; the lowest was '+DN[dl.getUTCDay()]+' '+dl.getUTCDate()+' '+MN[dl.getUTCMonth()]+' with '+nf(lo.M+lo.F,1)+'.'}
+
+/* ---------- contractor x day heatmap ---------- */
+function drawHeat(o,cons){var host=$('#heat'),W2=Math.max(300,host.clientWidth||760),lw=W2<560?110:170,n=o.daily.length,cw=(W2-lw-6)/n,rh=24,H2=cons.length*rh+26,mx=0;
+  cons.forEach(function(ci){(o.cd[ci]||[]).forEach(function(v){if(v>mx)mx=v})});
+  var g='<svg viewBox="0 0 '+W2+' '+H2+'" role="img" aria-label="Mandays by contractor and day">';
+  cons.forEach(function(ci,r){var y=r*rh;g+='<text x="0" y="'+(y+16)+'" style="fill:var(--ink)">'+(W2<560?CON[ci].n.split(' ')[0]:CON[ci].n)+'</text>';
+    (o.cd[ci]||new Array(n).fill(0)).forEach(function(v,i){var dt=new Date(o.daily[i].t),a=v>0?.12+.88*v/mx:0;
+      g+='<rect x="'+(lw+i*cw+1).toFixed(1)+'" y="'+(y+2)+'" width="'+Math.max(1,cw-2).toFixed(1)+'" height="'+(rh-4)+'" rx="2" fill="'+(v>0?'var(--accent)':'var(--bg)')+'" fill-opacity="'+(v>0?a.toFixed(2):1)+'" data-tip="'+esc('<b>'+CON[ci].n+'</b><div>'+DN[dt.getUTCDay()]+' '+dt.getUTCDate()+' '+MN[dt.getUTCMonth()]+': '+nf(v,1)+' mandays</div>')+'"/>'})});
+  var step=cw<14?7:cw<22?3:1;o.daily.forEach(function(d,i){if(i%step===0)g+='<text x="'+(lw+i*cw+cw/2)+'" y="'+(H2-6)+'" text-anchor="middle">'+new Date(d.t).getUTCDate()+'</text>'});
+  host.innerHTML=g+'</svg>';bindTips(host)}
+
+/* ---------- monthly trend (small multiples) ---------- */
+function drawTrend(){var host=$('#trend'),A=MONTHS.map(function(_,i){return agg(i,S.s)}),W2=Math.max(300,host.clientWidth||520);
+  var series=[['Mandays',A.map(function(a){return a.md}),function(v){return nf(v,0)}],['Attendance %',A.map(function(a){return a.att*100}),function(v){return Math.round(v)+'%'}],['Workers who worked',A.map(function(a){return a.worked}),function(v){return nf(v)}]];
+  var cw=W2,ch=92,g='<svg viewBox="0 0 '+cw+' '+(ch*3+6)+'" role="img" aria-label="Monthly trend">';
+  series.forEach(function(sr,k){var y0=k*ch,vals=sr[1],mn=Math.min.apply(null,vals),mx=Math.max.apply(null,vals),pad=(mx-mn)*.25||1,lo=mn-pad,hi=mx+pad,l=150,r=40,iw=cw-l-r;
+    function X(i){return l+i*iw/(vals.length-1)}function Y(v){return y0+14+(1-(v-lo)/(hi-lo))*(ch-40)}
+    g+='<text x="0" y="'+(y0+34)+'" style="fill:var(--ink);font-weight:500">'+sr[0]+'</text><text x="0" y="'+(y0+52)+'">'+sr[2](vals[S.m])+' in '+MN[MONTHS[S.m][1]]+'</text>';
+    g+='<path d="M'+vals.map(function(v,i){return X(i).toFixed(1)+' '+Y(v).toFixed(1)}).join('L')+'" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+    vals.forEach(function(v,i){var me=i===S.m;g+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="'+(me?5.5:4)+'" fill="'+(me?'var(--accent)':'var(--surface)')+'" stroke="var(--accent)" stroke-width="2" data-tip="'+esc('<b>'+MN[MONTHS[i][1]]+' '+MONTHS[i][0]+'</b><div>'+sr[0]+': '+sr[2](v)+'</div>')+'"/>';
+      if(k===2)g+='<text x="'+X(i)+'" y="'+(y0+ch)+'" text-anchor="middle">'+MN[MONTHS[i][1]]+'</text>'})});
+  host.innerHTML=g+'</svg>';bindTips(host);
+  $('#trnote').textContent='Four months of the sample, '+(S.s==='ALL'?'all sites':'Site '+S.s)+'. The workforce grows into the main harvest; attendance dips in October with the festival season.'}
+
+/* ---------- method flow ---------- */
+var IC={reg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0113 0M19 8v6M16 11h6"/></svg>',
+  id:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16a3 3 0 016 0M14 10h4M14 14h4"/></svg>',
+  cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="16" rx="2"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M7 13.5l1.5 1.5 3-3M14 14h3"/></svg>',
+  chk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.5l8 3v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10v-6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg>',
+  dash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6" rx=".5"/><rect x="12" y="8" width="3" height="10" rx=".5"/><rect x="17" y="5" width="3" height="13" rx=".5"/></svg>',
+  all:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="3" width="7" height="6" rx="1.2"/><rect x="2.5" y="15" width="7" height="6" rx="1.2"/><rect x="14.5" y="9" width="7" height="6" rx="1.2"/><path d="M9.5 6h2.5v12H9.5M12 12h2.5"/></svg>'};
+$('#flow').innerHTML=[
+  [IC.reg,'Register','The site records the worker once: KYC, contractor, local or outside, category, shift and joining date.'],
+  [IC.id,'Worker ID from HR','A script gets a unique Worker ID from the HR master within seconds and warns about possible duplicates.'],
+  [IC.cal,'Daily register','Each day the site picks the worker and marks full day, half day or absent, with the place of work.'],
+  [IC.chk,'Automatic checks','Wrong or double entries are blocked while typing; anything pasted in is flagged in red for review.'],
+  [IC.dash,'Site dashboard','Pick a month: KPIs, contractor grades, and splits by category, location, shift, gender and home state.'],
+  [IC.all,'All-sites view','A compiled dashboard reads every site for HR and management, including people marked at two sites.']
+].map(function(s){return '<div>'+s[0]+'<b>'+s[1]+'</b>'+s[2]+'</div>'}).join('');
+
+render();
+var rz=0,lastW=innerWidth;addEventListener('resize',function(){if(innerWidth===lastW)return;lastW=innerWidth;clearTimeout(rz);rz=setTimeout(render,150)});
+var root=document.documentElement;
+$('#tb').addEventListener('click',function(){var n=root.getAttribute('data-theme')==='light'?'dark':'light';root.setAttribute('data-theme',n);try{localStorage.setItem('theme',n)}catch(e){}});
+})();
+</script>
+</body>
+</html>
