@@ -4,10 +4,12 @@ Weekly yield forecasting for polyhouse crops.
 
 What it does
   1. Reads weekly records (one row per polyhouse per week), built from about 3 years of history.
-  2. Builds features: recent yield, crop age, crop and variety, weather, plant growth, season.
-  3. Trains one model per forecast distance (1, 2, ... N weeks ahead) with several algorithms.
-  4. Tests them on the most recent weeks that were held out (a time-based backtest).
-  5. Refits the best model for each distance and forecasts the running crops.
+  2. Builds features: recent yield, crop stage and the crop's typical yield curve, fruit set in
+     earlier weeks, weather, season, crop and variety.
+  3. For each crop and each forecast distance (1, 2, ... N weeks ahead) it trains several algorithms.
+  4. Picks the best algorithm per crop and distance on a validation period, then tests all of them
+     on the most recent weeks, which were held out (a time-based backtest).
+  5. Refits the chosen model on all data and forecasts the running crops, with an 80% range.
   6. Writes forecast_output.json (for the dashboard) and CSV files.
 
 Run
@@ -16,6 +18,7 @@ Run
 Options
   --horizon 8        weeks ahead to forecast (default 8)
   --test-weeks 52    weeks held out for the backtest (default 52)
+  --val-weeks 39     weeks before the test period used to pick the best model (default 39, in 3 rolling folds)
   --weather file.csv optional weather forecast, see README section "Weather forecast file"
   --tune             small hyper-parameter search with time-ordered cross-validation (slower)
 
@@ -30,7 +33,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
-from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor, VotingRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Ridge
 from sklearn.model_selection import GridSearchCV, TimeSeriesSplit
@@ -59,17 +62,22 @@ OPTIONAL = {
     "rh": "rh_pct",                            # weekly mean relative humidity
     "tsr": "solar_radiation_mj_m2",            # weekly mean daily solar radiation
     "vpd": "vpd_kpa",                          # weekly mean VPD
+    "planned_end": "planned_end_week",         # crop age (weeks) at which removal is planned
     "fruits": "fruits_per_cluster",            # growth records
+    "set": "set_clusters",                     # clusters setting fruit this week (harvested some weeks later)
     "clusters": "harvested_clusters",
     "height": "plant_height_cm",
     "nodes": "nodes_per_plant",
 }
 WEATHER_COLS = ["tday", "tnight", "rh", "tsr", "vpd"]
-GROWTH_COLS = ["fruits", "clusters", "height", "nodes"]
+GROWTH_COLS = ["fruits", "set", "clusters", "height", "nodes"]
+SET_LAGS = 8             # fruit set this week and up to 7 weeks earlier: fruit set then is harvested later
 INTERVAL = (0.10, 0.90)  # 80% interval
 CYCLE_GAP_DAYS = 21      # if your file has no cycle column, a gap longer than this starts a new crop cycle
 CYCLE_END_Q = 0.9        # forecasts stop after the crop age that 90% of finished cycles of that crop did not pass
+MAPE_MIN = 0.05          # weeks with less than this (kg/m2) are left out of MAPE, which explodes near zero
 SEED = 42
+MODELS = ["Naive", "Ridge", "RandomForest", "GradientBoosting", "Ensemble"]
 INFO_COLS = ("y", "target_date", "origin_date", "polyhouse", "crop", "variety")
 
 
@@ -105,6 +113,9 @@ def add_cycles(df):
     if "crop_age" not in df.columns:
         df["crop_age"] = df.groupby("cycle_key").cumcount() + 1
     df["crop_age"] = df["crop_age"].astype(float)
+    # weeks since this cycle's first harvest (negative before it): lines cycles up by when harvest really began
+    first = df[df["y"] > 0].groupby("cycle_key")["crop_age"].min()
+    df["hw"] = df["crop_age"] - df["cycle_key"].map(first)
     for c in WEATHER_COLS + GROWTH_COLS:
         if c in df.columns:
             # fill short gaps inside a crop cycle only; anything left is filled by the model's imputer
@@ -121,6 +132,26 @@ def climatology(df, cols):
         m = m.interpolate(limit_direction="both")
         sm = pd.concat([m.iloc[-2:], m, m.iloc[:2]]).rolling(3, center=True).mean().iloc[2:-2]
         out[c] = sm.values
+    return out
+
+
+def crop_profile(df):
+    """Typical yield of each crop at each crop age (smoothed mean over past cycles)."""
+    out = {}
+    for crop, g in df.groupby("crop"):
+        m = g.groupby(g["crop_age"].astype(int))["y"].mean()
+        m = m.reindex(range(1, int(m.index.max()) + 1)).interpolate(limit_direction="both")
+        out[crop] = m.rolling(3, center=True, min_periods=1).mean().to_dict()
+    return out
+
+
+def harvest_profile(df):
+    """Typical yield of each crop by weeks since the cycle's first harvest."""
+    out = {}
+    for crop, g in df[df["hw"] >= 0].groupby("crop"):
+        m = g.groupby(g["hw"].astype(int))["y"].mean()
+        m = m.reindex(range(0, int(m.index.max()) + 1)).interpolate(limit_direction="both")
+        out[crop] = m.rolling(3, center=True, min_periods=1).mean().to_dict()
     return out
 
 
@@ -146,13 +177,16 @@ def season(date):
 
 
 def feature_row(rec, hist, h, clim, crops, varieties, weather=None):
-    """One feature row from the latest record `rec` and the polyhouse history `hist` (up to and including rec)."""
+    """One feature row from the latest record `rec` and the cycle history `hist` (up to and including rec)."""
     tdate = rec["date"] + pd.Timedelta(weeks=h)
     row = {"age": rec["crop_age"], "target_age": rec["crop_age"] + h}
     ys = hist["y"].values
     for k in range(4):
         row[f"y_lag{k}"] = ys[-1 - k] if len(ys) > k else 0.0
     row["y_roll4"] = float(np.mean(ys[-4:]))
+    hs = np.flatnonzero(ys > 0)
+    row["hw"] = float(len(ys) - 1 - hs[0]) if len(hs) else -1.0
+    row["y_trend"] = float(np.mean(ys[-2:]) - np.mean(ys[-4:-2])) if len(ys) >= 4 else 0.0
     row["season_sin"], row["season_cos"] = season(tdate)
     two = hist.tail(2)
     for c in WEATHER_COLS:
@@ -161,6 +195,16 @@ def feature_row(rec, hist, h, clim, crops, varieties, weather=None):
     for c in GROWTH_COLS:
         if c in hist.columns:
             row[c] = float(rec[c])
+    for c in ("fruits", "set"):
+        if c in hist.columns:
+            v = hist[c].values
+            for k in range(1, SET_LAGS):
+                row[f"{c}_lag{k}"] = float(v[-1 - k]) if len(v) > k else np.nan
+            if c == "set":   # fruit set in the week that is harvested in the target week, for each lag
+                row["set_sum"] = float(np.nansum(v[-SET_LAGS:]))
+    if "planned_end" in hist.columns and not pd.isna(rec["planned_end"]):
+        row["to_end"] = float(rec["planned_end"] - (rec["crop_age"] + h))   # weeks between target week and planned removal
+        row["last_week"] = 1.0 if row["to_end"] == 0 else 0.0
     woy = min(tdate.isocalendar().week, 52) - 1
     for c in WEATHER_COLS:
         if c in clim:
@@ -183,6 +227,20 @@ def set_expected_weather(tab, clim):
     woy = tab["target_date"].dt.isocalendar().week.clip(upper=52).astype(int).values - 1
     for c, vals in clim.items():
         tab[f"fc_{c}"] = np.asarray(vals)[woy]
+    return tab
+
+
+def set_profile(tab, prof):
+    """Typical yield for the crop in the target week and now, and how this crop is doing against it.
+    Once harvest has started, the curve by weeks since first harvest is used; before that, the curve by crop age."""
+    tab = tab.copy()
+    by_age, by_hw = prof
+    look = lambda d, crop, k: d.get(crop, {}).get(int(k), np.nan)
+    def pick(c, age, hw, h):
+        return look(by_hw, c, hw + h) if hw >= 0 else look(by_age, c, age + h)
+    tab["prof_target"] = [pick(c, a, w, t - a) for c, a, w, t in zip(tab["crop"], tab["age"], tab["hw"], tab["target_age"])]
+    tab["prof_now"] = [pick(c, a, w, 0) for c, a, w in zip(tab["crop"], tab["age"], tab["hw"])]
+    tab["prof_index"] = tab["y_roll4"] / np.maximum(tab["prof_now"].fillna(0), 0.05)
     return tab
 
 
@@ -209,11 +267,14 @@ def build_table(df, h, clim, crops, varieties, min_age):
 def make_models():
     """Every model starts with a median imputer, so a missing growth or weather record never stops a run."""
     imp = lambda: SimpleImputer(strategy="median")
+    rf = lambda: RandomForestRegressor(n_estimators=250, max_depth=12, min_samples_leaf=3, max_features=0.5, n_jobs=-1, random_state=SEED)
+    gb = lambda: GradientBoostingRegressor(n_estimators=300, learning_rate=0.05, max_depth=3, subsample=0.8, random_state=SEED)
     return {
-        "Naive": None,   # repeat this week's yield
         "Ridge": make_pipeline(imp(), StandardScaler(), Ridge(alpha=2.0)),
-        "RandomForest": make_pipeline(imp(), RandomForestRegressor(n_estimators=300, max_depth=12, min_samples_leaf=3, n_jobs=-1, random_state=SEED)),
-        "GradientBoosting": make_pipeline(imp(), GradientBoostingRegressor(n_estimators=300, learning_rate=0.05, max_depth=3, subsample=0.8, random_state=SEED)),
+        "RandomForest": make_pipeline(imp(), rf()),
+        "GradientBoosting": make_pipeline(imp(), gb()),
+        # average of the two tree models: usually steadier than either one alone
+        "Ensemble": make_pipeline(imp(), VotingRegressor([("rf", rf()), ("gb", gb())])),
     }
 
 
@@ -229,30 +290,36 @@ def tune_gb(X, y):
 
 def score(y, p):
     y, p = np.asarray(y, float), np.asarray(p, float)
-    m = y > 0.05
+    m = y > MAPE_MIN
+    mape = float(np.mean(np.abs(y[m] - p[m]) / y[m]) * 100) if m.any() else float("nan")
+    wape = float(np.sum(np.abs(y - p)) / max(np.sum(y), 1e-9) * 100)
     return {
         "mae": float(np.mean(np.abs(y - p))),
         "rmse": float(np.sqrt(np.mean((y - p) ** 2))),
-        "mape": float(np.mean(np.abs(y[m] - p[m]) / y[m]) * 100) if m.any() else float("nan"),
-        "wape": float(np.sum(np.abs(y - p)) / max(np.sum(y), 1e-9) * 100),
+        "mape": mape,
+        "wape": wape,
+        "accuracy": max(0.0, 100 - mape),                  # accuracy = 100% - MAPE
         "r2": float(1 - np.sum((y - p) ** 2) / max(np.sum((y - y.mean()) ** 2), 1e-12)),
+        "n": int(len(y)),
     }
 
 
-def ratio_quantiles(y, p):
-    r = (np.asarray(y) - np.asarray(p)) / np.maximum(np.asarray(p), 0.05)
+def error_quantiles(y, p):
+    """10th and 90th percentile of the forecast error (actual minus forecast), in kg/m2."""
+    r = np.asarray(y) - np.asarray(p)
     return float(np.quantile(r, INTERVAL[0])), float(np.quantile(r, INTERVAL[1]))
 
 
 GROUPS = [  # related features are shuffled together, so credit is not split between near-copies
     ("Recent harvest", lambda f: f.startswith("y_")),
-    ("Crop stage (age, height, nodes)", lambda f: f in ("age", "target_age", "height", "nodes")),
-    ("Fruit set (fruits per cluster)", lambda f: f == "fruits"),
+    ("Crop stage and typical yield curve", lambda f: f in ("age", "target_age", "hw", "height", "nodes") or f.startswith("prof_")),
+    ("Fruit set, this and earlier weeks", lambda f: f.startswith(("fruits", "set"))),
+    ("Planned crop removal", lambda f: f in ("to_end", "last_week")),
     ("Harvested clusters", lambda f: f == "clusters"),
     ("Weather, last 2 weeks", lambda f: f in WEATHER_COLS),
     ("Expected weather", lambda f: f.startswith("fc_")),
     ("Season", lambda f: f.startswith("season_")),
-    ("Crop and variety", lambda f: f.startswith(("crop_", "variety_"))),
+    ("Variety", lambda f: f.startswith(("crop_", "variety_"))),
 ]
 
 
@@ -294,6 +361,8 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--horizon", type=int, default=8)
     ap.add_argument("--test-weeks", type=int, default=52)
+    ap.add_argument("--val-weeks", type=int, default=39)
+    ap.add_argument("--val-folds", type=int, default=3)
     ap.add_argument("--weather", default=None)
     ap.add_argument("--tune", action="store_true")
     a = ap.parse_args()
@@ -308,12 +377,18 @@ def main():
     last_date = df["date"].max()
     end_age = cycle_end_age(df, last_date)
     cutoff = last_date - pd.Timedelta(weeks=a.test_weeks)
+    val_start = cutoff - pd.Timedelta(weeks=a.val_weeks)
     mid_test = cutoff + pd.Timedelta(weeks=a.test_weeks // 2)
-    # expected weather for the backtest only uses history up to the cutoff; the live forecast uses all of it
-    clim_train = climatology(df[df["date"] <= cutoff], present_w) if present_w else {}
+    # anything learned from history (weather normals, typical yield curves) only uses weeks before the
+    # test period in the backtest; the live forecast uses all of it
+    train_hist = df[df["date"] <= cutoff]
+    clim_train = climatology(train_hist, present_w) if present_w else {}
     clim_all = climatology(df, present_w) if present_w else {}
+    prof_train = (crop_profile(train_hist), harvest_profile(train_hist))
+    prof_all = (crop_profile(df), harvest_profile(df))
     print(f"{len(df)} weekly records, {df['polyhouse'].nunique()} polyhouses, {df['date'].min().date()} to {last_date.date()}")
-    print(f"Training on target weeks up to {cutoff.date()}, testing on the {a.test_weeks} weeks after it")
+    print(f"Training on target weeks up to {cutoff.date()} (model choice on the last {a.val_weeks} of them, {a.val_folds} rolling folds), "
+          f"testing on the {a.test_weeks} weeks after it")
 
     weather = None
     if a.weather:
@@ -324,124 +399,178 @@ def main():
             for p in ph:
                 weather[(p, r["week_start"])] = {c: r[c] for c in present_w if c in wf.columns}
 
-    area_by_ph = df.groupby("polyhouse")["area_m2"].last().to_dict()
-    models_all = ["Naive", "Ridge", "RandomForest", "GradientBoosting"]
-    metrics = {m: {} for m in models_all}
-    by_crop, best, skill, coverage, tuned = {}, {}, {}, {}, {}
-    backtest_rows, scatter_rows = [], []
-    importance_by_h = {}
-    fitted_best, ratio_q = {}, {}
+    metrics = {c: {m: {} for m in MODELS} for c in crops}            # crop -> model -> h -> scores
+    overall = {m: {} for m in MODELS + ["Best"]}                     # all crops together
+    best, val_mae, skill, coverage, tuned = ({c: {} for c in crops} for _ in range(5))
+    importance_by = {c: {} for c in crops}
+    fitted, err_q = {c: {} for c in crops}, {c: {} for c in crops}
+    store = {}                                                       # (crop, h) -> what the second step needs
+    feats_h = {}
 
+    # step 1: for every crop and distance, score every model on the validation weeks and on the test year
     for h in range(1, a.horizon + 1):
-        tab = build_table(df, h, clim_train, crops, varieties, min_age)
+        tab = set_profile(build_table(df, h, clim_train, crops, varieties, min_age), prof_train)
         if tab.empty:
             raise SystemExit("No usable rows. Check that weeks are consecutive within each crop cycle.")
-        feats = [c for c in tab.columns if c not in INFO_COLS]
-        tr = tab[tab["target_date"] <= cutoff].sort_values(["target_date", "polyhouse"])
-        te = tab[tab["target_date"] > cutoff]
-        if len(tr) < 100 or len(te) < 20:
-            raise SystemExit(f"Too little data for horizon {h}: {len(tr)} training rows, {len(te)} test rows.")
-        models = make_models()
-        if a.tune:
-            models["GradientBoosting"], tuned[h] = tune_gb(tr[feats], tr["y"])
+        feats = feats_h[h] = [c for c in tab.columns if c not in INFO_COLS]
+        full_tab = set_profile(set_expected_weather(tab, clim_all), prof_all)
+        for crop in crops:
+            tc = tab[tab["crop"] == crop]
+            tr = tc[tc["target_date"] <= cutoff].sort_values(["target_date", "polyhouse"])
+            te = tc[tc["target_date"] > cutoff].copy()
+            fit = tr[tr["target_date"] <= val_start]
+            if len(fit) < 60 or len(te) < 10:
+                raise SystemExit(f"Too little {crop} data for horizon {h}: {len(fit)} rows before validation, {len(te)} test rows.")
+            models = make_models()
+            if a.tune:
+                models["GradientBoosting"], tuned[crop][h] = tune_gb(fit[feats], fit["y"])
+            # rolling-origin validation: each fold is predicted by models trained only on the weeks before it
+            err = {name: [] for name in models}
+            fold = pd.Timedelta(weeks=a.val_weeks // a.val_folds)
+            for k in range(a.val_folds):
+                f0 = val_start + k * fold
+                f1 = cutoff if k == a.val_folds - 1 else f0 + fold
+                ftr, fva = tr[tr["target_date"] <= f0], tr[(tr["target_date"] > f0) & (tr["target_date"] <= f1)]
+                if len(fva) == 0:
+                    continue
+                for name, mdl in models.items():
+                    m = clone(mdl).fit(ftr[feats], ftr["y"])
+                    err[name].extend(np.abs(fva["y"] - np.clip(m.predict(fva[feats]), 0, None)))
+            vm = {name: float(np.mean(e)) for name, e in err.items()}
+            val_mae[crop][h] = {k: round(v, 4) for k, v in vm.items()}
+            te["pred_Naive"] = te["y_lag0"].values                   # test: train on everything before the test year
+            test_models = {}
+            for name, mdl in models.items():
+                test_models[name] = clone(mdl).fit(tr[feats], tr["y"])
+                te[f"pred_{name}"] = np.clip(test_models[name].predict(te[feats]), 0, None)
+            for name in MODELS:
+                metrics[crop][name][h] = score(te["y"], te[f"pred_{name}"])
+            store[(crop, h)] = dict(te=te, models=models, test_models=test_models,
+                                    full=full_tab[full_tab["crop"] == crop].sort_values(["target_date", "polyhouse"]))
+        print(f"  h={h}: scored " + ", ".join(f"{c} ({len(store[(c, h)]['te'])} test weeks)" for c in crops))
+
+    # step 2: one model per crop, the one with the lowest average validation error over all distances.
+    # The test year plays no part in the choice, so its scores are a fair estimate of live accuracy.
+    for crop in crops:
+        mean_val = {m: np.mean([val_mae[crop][h][m] for h in val_mae[crop]]) for m in MODELS if m != "Naive"}
+        choice = min(mean_val, key=mean_val.get)
+        for h in range(1, a.horizon + 1):
+            st = store[(crop, h)]
+            te, feats = st["te"], feats_h[h]
+            best[crop][h] = choice
+            te["pred_Best"] = te[f"pred_{choice}"]
+            skill[crop][h] = round((1 - metrics[crop][choice][h]["mae"] / metrics[crop]["Naive"][h]["mae"]) * 100, 1)
+            # 80% range: learned on the first half of the test year, checked on the second half;
+            # the live forecast uses the whole test year
+            first, second = te[te["target_date"] <= mid_test], te[te["target_date"] > mid_test]
+            lo, hi = error_quantiles(first["y"], first["pred_Best"])
+            inside = (second["y"] >= second["pred_Best"] + lo) & (second["y"] <= second["pred_Best"] + hi)
+            coverage[crop][h] = round(float(inside.mean()) * 100, 1)
+            err_q[crop][h] = error_quantiles(te["y"], te["pred_Best"])
+            if h in (1, a.horizon):
+                importance_by[crop][h] = importance(st["test_models"][choice], te[feats], te["y"], feats)
+            fitted[crop][h] = (clone(st["models"][choice]).fit(st["full"][feats], st["full"]["y"]), feats)
+        print(f"  {crop}: best model {choice} (mean validation MAE " + ", ".join(f"{m} {v:.3f}" for m, v in mean_val.items()) + ")")
+        print("     accuracy by weeks ahead: " + "  ".join(f"{h}:{metrics[crop][choice][h]['accuracy']:.1f}%" for h in range(1, a.horizon + 1)))
+
+    test_rows = {}
+    for h in range(1, a.horizon + 1):
+        te_all = pd.concat([store[(c, h)]["te"] for c in crops])
+        test_rows[h] = te_all
+        for name in MODELS + ["Best"]:
+            overall[name][h] = score(te_all["y"], te_all[f"pred_{name}"])
+    print("  all crops: " + "  ".join(f"{h}:{overall['Best'][h]['accuracy']:.1f}%" for h in range(1, a.horizon + 1)))
+
+    # ---- backtest series per polyhouse, every model and distance ------------
+    weeks = pd.date_range(cutoff + pd.Timedelta(weeks=1), last_date, freq="7D")
+    widx = {d: i for i, d in enumerate(weeks)}
+    backtest = {}
+    test_df = df[df["date"] > cutoff]
+    for ph, g in test_df.groupby("polyhouse"):
+        actual, crop_w = [None] * len(weeks), [None] * len(weeks)
+        for d, y, c in zip(g["date"], g["y"], g["crop"]):
+            if d in widx:
+                actual[widx[d]], crop_w[widx[d]] = round(float(y), 4), c
         preds = {}
-        for name, mdl in models.items():
-            if name == "Naive":
-                p = te["y_lag0"].values
-            else:
-                if not (a.tune and name == "GradientBoosting"):   # the tuned model is already fitted on tr
-                    mdl.fit(tr[feats], tr["y"])
-                p = np.clip(mdl.predict(te[feats]), 0, None)
-            preds[name] = p
-            metrics[name][h] = score(te["y"], p)
-        best[h] = min([m for m in models_all if m != "Naive"], key=lambda m: metrics[m][h]["mae"])
-        skill[h] = round((1 - metrics[best[h]][h]["mae"] / metrics["Naive"][h]["mae"]) * 100, 1)
-        te = te.assign(pred=preds[best[h]])
-
-        # 80% range: learn the error spread on the first half of the test year, check it on the second half,
-        # then use the whole test year for the live forecast
-        first, second = te[te["target_date"] <= mid_test], te[te["target_date"] > mid_test]
-        lo, hi = ratio_quantiles(first["y"], first["pred"])
-        inside = (second["y"] >= second["pred"] * (1 + lo)) & (second["y"] <= second["pred"] * (1 + hi))
-        coverage[h] = round(float(inside.mean()) * 100, 1)
-        ratio_q[h] = ratio_quantiles(te["y"], te["pred"])
-
-        for cr, g in te.groupby("crop"):
-            by_crop.setdefault(cr, {})[h] = score(g["y"], g["pred"])
-        if h == 1:
-            for ph, g in te.sort_values("target_date").groupby("polyhouse"):
-                backtest_rows.append((ph, g["crop"].tolist(), [d.date().isoformat() for d in g["target_date"]], g["y"].round(4).tolist(), g["pred"].round(4).tolist()))
-            smp = te.sample(min(400, len(te)), random_state=SEED)
-            scatter_rows = [[round(float(y), 3), round(float(p), 3), c] for y, p, c in zip(smp["y"], smp["pred"], smp["crop"])]
-        if h in (1, a.horizon):
-            importance_by_h[h] = importance(models[best[h]], te[feats], te["y"], feats)
-
-        # refit the best model (with tuned settings, if any) on all rows for the live forecast
-        full = set_expected_weather(tab, clim_all).sort_values(["target_date", "polyhouse"])
-        final = clone(models[best[h]])
-        final.fit(full[feats], full["y"])
-        fitted_best[h] = (final, feats)
-        print(f"  h={h}: best {best[h]:17s} MAE {metrics[best[h]][h]['mae']:.3f}  MAPE {metrics[best[h]][h]['mape']:.1f}%  "
-              f"(naive MAPE {metrics['Naive'][h]['mape']:.1f}%, {skill[h]:+.0f}% better)  80% range held {coverage[h]:.0f}%")
+        for h, te in test_rows.items():
+            t = te[te["polyhouse"] == ph]
+            preds[str(h)] = {}
+            for name in MODELS:
+                arr = [None] * len(weeks)
+                for d, p in zip(t["target_date"], t[f"pred_{name}"]):
+                    arr[widx[d]] = round(float(p), 3)
+                preds[str(h)][name] = arr
+        backtest[ph] = dict(area_m2=float(g["area_m2"].iloc[-1]), crop=crop_w, actual=actual, pred=preds)
 
     # ---- forecast the running crops --------------------------------------
-    forecast = {}
+    forecast, idle = {}, {}
     for ph, g in df.groupby("polyhouse"):
         g = g.sort_values("date")
         rec = g.iloc[-1]
-        if (last_date - rec["date"]).days > 14:
-            continue                                           # no record in the last two weeks: crop not running
+        if (last_date - rec["date"]).days > 14:                # no record in the last two weeks: crop not running
+            idle[ph] = dict(last_crop=rec["crop"], last_date=rec["date"].date().isoformat(), area_m2=float(rec["area_m2"]))
+            continue
         cyc = g[g["cycle_key"] == rec["cycle_key"]].reset_index(drop=True)
+        crop = rec["crop"]
         dates, ys, los, his = [], [], [], []
-        stop = end_age.get(rec["crop"], np.inf)
+        stop = float(rec["planned_end"]) if "planned_end" in rec and not pd.isna(rec["planned_end"]) else end_age.get(crop, np.inf)
         for h in range(1, a.horizon + 1):
             tdate = rec["date"] + pd.Timedelta(weeks=h)
             tage = rec["crop_age"] + h
-            if tage < min_age.get(rec["crop"], 1) or tage > stop:
+            if tage < min_age.get(crop, 1) or tage > stop:
                 val = lo = hi = 0.0                            # before first harvest, or after the crop normally ends
             else:
-                model, feats = fitted_best[h]
-                row = feature_row(rec, cyc, h, clim_all, crops, varieties, weather)
-                val = float(max(0.0, model.predict(pd.DataFrame([row])[feats])[0]))
-                lo, hi = val * (1 + ratio_q[h][0]), val * (1 + ratio_q[h][1])
+                model, feats = fitted[crop][h]
+                row = pd.DataFrame([feature_row(rec, cyc, h, clim_all, crops, varieties, weather)])
+                row = set_profile(row.assign(crop=crop), prof_all)
+                val = float(max(0.0, model.predict(row[feats])[0]))
+                lo, hi = val + err_q[crop][h][0], val + err_q[crop][h][1]
             dates.append(tdate.date().isoformat())
             ys.append(round(val, 4)); los.append(round(max(0.0, lo), 4)); his.append(round(hi, 4))
         hist = cyc.tail(16)
-        forecast[ph] = dict(crop=rec["crop"], variety=rec["variety"], area_m2=float(rec["area_m2"]), crop_age=float(rec["crop_age"]),
+        forecast[ph] = dict(crop=crop, variety=rec["variety"], area_m2=float(rec["area_m2"]), crop_age=float(rec["crop_age"]),
                             expected_end_age=None if np.isinf(stop) else float(stop),
                             last_actual_date=rec["date"].date().isoformat(), last_actual=round(float(rec["y"]), 4),
                             history_dates=[d.date().isoformat() for d in hist["date"]], history=hist["y"].round(4).tolist(),
+                            best_model=[best[crop][h] for h in range(1, a.horizon + 1)],
                             dates=dates, y=ys, lo=los, hi=his)
 
     # ---- write results -----------------------------------------------------
+    hk = lambda d: {str(h): v for h, v in d.items()}
     result = {
         "meta": {
             "generated_at": datetime.now().isoformat(timespec="seconds"),
             "data_start": df["date"].min().date().isoformat(), "data_end": last_date.date().isoformat(),
             "n_rows": int(len(df)), "n_polyhouses": int(df["polyhouse"].nunique()), "n_cycles": int(df["cycle_key"].nunique()),
-            "crops": crops, "varieties": varieties,
+            "crops": crops, "varieties": varieties, "models": MODELS,
             "first_harvest_age": {k: float(v) for k, v in min_age.items()}, "cycle_end_age": {k: float(v) for k, v in end_age.items()},
-            "horizon_weeks": a.horizon, "test_start": (cutoff + pd.Timedelta(weeks=1)).date().isoformat(), "test_weeks": a.test_weeks,
-            "models": models_all, "best_model": {str(h): m for h, m in best.items()},
-            "skill_vs_naive_pct": {str(h): v for h, v in skill.items()},
-            "interval_coverage_pct": {str(h): v for h, v in coverage.items()},
+            "horizon_weeks": a.horizon, "test_start": weeks[0].date().isoformat(), "test_weeks": a.test_weeks,
+            "val_start": (val_start + pd.Timedelta(weeks=1)).date().isoformat(), "val_weeks": a.val_weeks, "val_folds": a.val_folds,
+            "best_model": {c: hk(v) for c, v in best.items()},
+            "best_model_by_crop": {c: v[1] for c, v in best.items()},
+            "model_choice": "one model per crop: lowest average validation MAE over all distances",
+            "validation_mae": {c: hk(v) for c, v in val_mae.items()},
+            "skill_vs_naive_pct": {c: hk(v) for c, v in skill.items()},
+            "interval_coverage_pct": {c: hk(v) for c, v in coverage.items()},
+            "accuracy": f"100% minus MAPE; weeks under {MAPE_MIN} kg/m2 are left out of MAPE",
             "weather": "weather forecast file" if a.weather else "seasonal normals from history",
-            "interval": "80%, from backtest errors at each distance ahead",
-            "unit": "kg per m2 per week", "tuned": {str(h): v for h, v in tuned.items()} if a.tune else False,
+            "interval": "80%: 10th to 90th percentile of backtest errors (kg/m2) at each distance ahead, per crop",
+            "unit": "kg per m2 per week", "tuned": {c: hk(v) for c, v in tuned.items()} if a.tune else False,
         },
-        "metrics": {"overall": {m: {str(h): v for h, v in d.items()} for m, d in metrics.items()},
-                    "by_crop": {c: {str(h): v for h, v in d.items()} for c, d in by_crop.items()}},
-        "backtest": {ph: dict(crop=cr[-1], crops=cr, area_m2=float(area_by_ph[ph]), dates=d, actual=ya, pred=yp) for ph, cr, d, ya, yp in backtest_rows},
+        "metrics": {"by_crop": {c: {m: hk(d) for m, d in v.items()} for c, v in metrics.items()},
+                    "overall": {m: hk(d) for m, d in overall.items()}},
+        "backtest": {"weeks": [d.date().isoformat() for d in weeks], "polyhouses": backtest},
         "forecast": forecast,
-        "importance": importance_by_h.get(1),
-        "importance_by_h": {str(h): v for h, v in importance_by_h.items()},
-        "scatter": scatter_rows,
+        "idle": idle,
+        "importance": {c: hk(v) for c, v in importance_by.items()},
     }
     (out / "forecast_output.json").write_text(json.dumps(result, separators=(",", ":")))
-    pd.DataFrame([dict(model=m, weeks_ahead=h, **v) for m, d in metrics.items() for h, v in d.items()]).to_csv(out / "model_metrics.csv", index=False)
-    pd.DataFrame([dict(polyhouse=ph, crop=f["crop"], variety=f["variety"], week_start=d, yield_kg_m2=y, low_kg_m2=lo, high_kg_m2=hi,
+    pd.DataFrame([dict(crop=c, model=m, weeks_ahead=h, best=(best[c][h] == m), **s)
+                  for c, v in metrics.items() for m, d in v.items() for h, s in d.items()]).to_csv(out / "model_metrics.csv", index=False)
+    pd.DataFrame([dict(polyhouse=ph, crop=f["crop"], variety=f["variety"], week_start=d, weeks_ahead=i + 1, model=f["best_model"][i],
+                       yield_kg_m2=y, low_kg_m2=lo, high_kg_m2=hi,
                        yield_kg=round(y * f["area_m2"], 1), low_kg=round(lo * f["area_m2"], 1), high_kg=round(hi * f["area_m2"], 1))
-                  for ph, f in forecast.items() for d, y, lo, hi in zip(f["dates"], f["y"], f["lo"], f["hi"])]).to_csv(out / "forecast.csv", index=False)
+                  for ph, f in forecast.items() for i, (d, y, lo, hi) in enumerate(zip(f["dates"], f["y"], f["lo"], f["hi"]))]).to_csv(out / "forecast.csv", index=False)
     print(f"Done. Results are in {out.resolve()}  (forecast_output.json, forecast.csv, model_metrics.csv)")
 
 

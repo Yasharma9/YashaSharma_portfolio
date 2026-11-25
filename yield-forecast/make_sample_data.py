@@ -13,7 +13,9 @@ What is in the file
     gap for cleaning between cycles
   - Weekly weather inside the polyhouse: day and night temperature, humidity, solar
     radiation and VPD, following Indian seasons (hot dry summer, humid monsoon, mild winter)
-  - Weekly growth records: fruits per cluster, harvested clusters, plant height, nodes
+  - Weekly growth records: fruits per cluster, clusters set per plant, harvested clusters,
+    plant height, nodes
+  - The planned removal week of each crop (crop age), set at planting. The real end can move by a week.
 
 How yield is made
   yield = crop curve for the crop age (ramp up, peak, decline)
@@ -109,7 +111,7 @@ def main():
     end = pd.Timestamp(a.end)
     first = end - pd.Timedelta(weeks=a.weeks - 1)
     sim_start = first - pd.Timedelta(weeks=60)                  # simulate earlier so cycles are staggered
-    dates = pd.date_range(sim_start, end, freq="7D")
+    dates = pd.date_range(sim_start - pd.Timedelta(weeks=4), end, freq="7D")   # a little weather before the first crop
     wx = farm_weather(dates, rng).set_index("date")
 
     rows = []
@@ -126,7 +128,8 @@ def main():
             c = CROPS[crop]
             cycle += 1
             start = max(3, int(round(rng.normal(*c["start"]))))
-            length = int(rng.integers(c["length"][0], c["length"][1] + 1))
+            planned = int(rng.integers(c["length"][0], c["length"][1] + 1))
+            length = planned + int(rng.choice([-1, 0, 0, 0, 1]))    # the real end can move by a week
             var = rng.choice(list(c["varieties"]))
             # pest or disease event in about 1 cycle in 4
             pest = np.ones(length + 1)
@@ -155,14 +158,16 @@ def main():
                 rel = pot / c["peak"]
                 fruits = c["fpc"] * sq * rng.normal(1, 0.05)
                 clusters = c["clusters"] * rel * set_then * pest[age] * rng.normal(1, 0.08) if pot > 0 else 0.0
+                # clusters setting fruit this week: these are harvested about `lag` weeks later
+                set_now = c["clusters"] * crop_curve(age + c["lag"], c, start, length) / c["peak"] * sq * rng.normal(1, 0.06)
                 height = c["height"][0] + c["height"][1] * age * rng.normal(1, 0.03)
                 nodes = c["nodes"][0] + c["nodes"][1] * age * rng.normal(1, 0.03)
                 if d >= first:
                     rows.append(dict(week_start=d.date().isoformat(), polyhouse=ph, cycle_id=cycle, crop_code=crop, variety_code=var,
-                                     crop_age_weeks=age, area_m2=area, harvest_kg=round(y * area, 1),
+                                     crop_age_weeks=age, planned_end_week=planned, area_m2=area, harvest_kg=round(y * area, 1),
                                      day_temp_c=round(td, 1), night_temp_c=round(tn, 1), rh_pct=round(rh, 1),
                                      solar_radiation_mj_m2=round(tsr, 2), vpd_kpa=round(vp, 2),
-                                     fruits_per_cluster=round(fruits, 2), harvested_clusters=round(clusters, 2),
+                                     fruits_per_cluster=round(fruits, 2), set_clusters=round(set_now, 2), harvested_clusters=round(clusters, 2),
                                      plant_height_cm=round(height, 1), nodes_per_plant=round(nodes, 1)))
             t = t + pd.Timedelta(weeks=length + int(rng.integers(2, 5)))   # cleaning gap before the next crop
 
@@ -170,7 +175,7 @@ def main():
     # real data is never complete: drop some weeks and blank some growth records
     keep = rng.random(len(df)) > 0.015
     df = df[keep | (df["crop_age_weeks"] == 1)].copy()
-    for col in ["fruits_per_cluster", "harvested_clusters", "plant_height_cm", "nodes_per_plant"]:
+    for col in ["fruits_per_cluster", "set_clusters", "harvested_clusters", "plant_height_cm", "nodes_per_plant"]:
         df.loc[rng.random(len(df)) < 0.04, col] = np.nan
     df = df.sort_values(["polyhouse", "week_start"]).reset_index(drop=True)
     df.to_csv(a.out, index=False)
